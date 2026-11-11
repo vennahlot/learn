@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How a Qimen Dunjia chart is cast · 奇门遁甲是怎么排盘的</title>
+<meta name="description" content="An interactive, bilingual lesson: lock the current moment and cast a Qimen Dunjia chart step by step — pillars, solar term, yuan, ju, earth plate, stars, doors and spirits.">
+<style>
+*{box-sizing:border-box}
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1f2633;--mute:#6b7280;--line:#e5e7eb;--acc:#2563eb;--hl:#fff4c2;--ok:#059669;--bad:#dc2626;--c1:#7c3aed;--c2:#0d9488;--c3:#d97706;--c4:#2563eb}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+.top{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.top h1{font-size:18px;margin:0 auto 0 0;line-height:1.3}
+.top a.home{text-decoration:none;color:var(--mute);font-size:20px;line-height:1}
+select,.btn,input[type=datetime-local]{font:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+.btn{cursor:pointer}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.btn:disabled{opacity:.4;cursor:default}
+main{max-width:1180px;margin:0 auto;padding:16px 20px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+.stepper{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.dots{display:flex;gap:7px;flex-wrap:wrap;flex:1;align-items:center}
+.dot{width:12px;height:12px;border-radius:50%;background:#d1d5db;border:0;padding:0;cursor:pointer}
+.dot.done{background:#93c5fd}.dot.cur{background:var(--acc);transform:scale(1.35)}
+.kbd{color:var(--mute);font-size:12.5px}
+.story .n{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.story h2{margin:4px 0 8px;font-size:22px;line-height:1.3}
+.story p{margin:8px 0}
+.story ul{margin:6px 0;padding-left:20px}.story li{margin:4px 0}
+.tip-box{background:#eff6ff;border-left:4px solid var(--acc);border-radius:8px;padding:10px 14px;margin-top:10px}
+.kw{background:#fffbeb;border:1px solid #fcd34d;border-radius:5px;padding:0 5px;font-weight:700;white-space:nowrap}
+.sec-title{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin-bottom:8px}
+.none{color:#9ca3af;font-style:italic;font-size:14px}
+.ok{color:var(--ok);font-weight:800;margin-right:4px}
+.bad{color:var(--bad);font-weight:800;margin-right:4px}
+/* ---------- start screen ---------- */
+.hero{text-align:center;padding:34px 18px 28px}
+.hero h2{font-size:26px;margin:0 0 8px}
+.hero p{max-width:640px;margin:8px auto;color:#374151}
+.clock{font-variant-numeric:tabular-nums;font-size:44px;font-weight:800;letter-spacing:.02em;margin:18px 0 4px}
+.clock small{display:block;font-size:15px;font-weight:500;color:var(--mute);letter-spacing:0}
+.go-btn{font:inherit;font-size:20px;font-weight:700;padding:14px 34px;border-radius:999px;border:0;background:var(--acc);color:#fff;cursor:pointer;margin:14px 0 6px;box-shadow:0 8px 22px rgba(37,99,235,.3)}
+.go-btn:active{transform:scale(.97)}
+.alt{margin-top:16px;color:var(--mute);font-size:14px;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+.locked{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:14px}
+.locked b{font-variant-numeric:tabular-nums}
+.locked .sp{flex:1}
+/* ---------- layout ---------- */
+.panels{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+.panel{border-top:4px solid var(--c);margin-bottom:0}
+/* ---------- the board ---------- */
+.board{position:relative;display:grid;grid-template-columns:repeat(3,1fr);border:2px solid #374151;border-radius:6px;overflow:hidden;max-width:520px;margin:0 auto}
+.pal{position:relative;aspect-ratio:1;border:1px solid #cbd5e1;background:#fff;transition:background .3s}
+.pal.c5{background:#f8fafc}
+.pal.hl{background:var(--hl)}
+.pal.src{background:repeating-linear-gradient(45deg,#fff,#fff 6px,#f1f5f9 6px,#f1f5f9 12px)}
+.pal > span{position:absolute;line-height:1.15;white-space:nowrap}
+.lab{left:6px;bottom:5px;font-size:12px;color:var(--mute)}
+.big{left:0;right:0;top:50%;transform:translateY(-58%);text-align:center;font-size:30px;font-weight:800;color:#94a3b8}
+.big small{display:block;font-size:13px;font-weight:600;color:var(--mute)}
+.ea{right:7px;bottom:5px;font-size:19px;font-weight:800;color:var(--c2)}
+.he{right:7px;top:5px;font-size:19px;font-weight:800;color:var(--c1)}
+.st{left:0;right:0;top:31%;text-align:center;font-size:15px;font-weight:700;color:var(--c1)}
+.st small{font-size:11px;font-weight:600;opacity:.75}
+.dr{left:0;right:0;top:53%;text-align:center;font-size:15px;font-weight:700;color:var(--c3)}
+.gd{left:6px;top:5px;font-size:13px;font-weight:700;color:var(--c4)}
+.mk{left:0;right:0;bottom:22%;text-align:center;font-size:11px}
+.mk i{font-style:normal;display:inline-block;border-radius:4px;padding:0 4px;margin:0 1px;color:#fff;font-weight:700}
+.mk .k{background:#64748b}.mk .m{background:#be123c}
+.tag{left:50%;top:-1px;transform:translateX(-50%);font-size:11px;background:#1f2633;color:#fff;border-radius:0 0 6px 6px;padding:1px 6px;z-index:2}
+.ji{left:0;right:0;top:53%;text-align:center;font-size:11px;color:var(--mute)}
+.new{animation:pop .5s ease both}
+.overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.overlay line{stroke-width:2.4;fill:none;stroke-linecap:round;opacity:.6}
+.overlay .draw{stroke-dasharray:100;stroke-dashoffset:100;animation:draw .35s ease forwards}
+.legendrow{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:center;margin-top:10px;font-size:12.5px;color:var(--mute)}
+.legendrow b{font-weight:800}
+/* ---------- work panel ---------- */
+table.t{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0}
+.t th,.t td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+.t th{font-size:12px;color:var(--mute);font-weight:600}
+.t tr.on td{background:var(--hl);font-weight:700}
+.t td.c{text-align:center}
+.gz{font-weight:800;font-size:17px;letter-spacing:.05em}
+.py{color:var(--mute);font-size:12px;font-weight:500;margin-left:4px}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.chip{border:1px solid var(--line);border-radius:8px;padding:3px 7px;font-size:13.5px;background:#fff;text-align:center;min-width:44px}
+.chip small{display:block;font-size:11px;color:var(--mute)}
+.chip.on{border-color:#f59e0b;background:#fde68a;font-weight:800}
+.chip.y0{border-top:3px solid #ef4444}.chip.y1{border-top:3px solid #f59e0b}.chip.y2{border-top:3px solid #3b82f6}
+.cmp{font-size:14px;margin:8px 0;padding:8px 10px;background:#f9fafb;border-radius:8px;border:1px solid var(--line)}
+.res{font-weight:700;margin-top:8px;font-size:16px}
+.jt{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.jt h4{margin:0 0 4px;font-size:13px}
+.jt table td{padding:2px 5px;font-size:13px}
+.jt td.on{background:#fde68a;font-weight:800;border-radius:4px}
+.jt tr.row td{background:#fffbeb}
+.wheel{display:block;margin:0 auto;max-width:330px;width:100%}
+.verse{font-size:13px;color:#374151;background:#fafaf9;border:1px dashed #d6d3d1;border-radius:8px;padding:8px 10px;margin:8px 0;line-height:1.7}
+@keyframes pop{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:none}}
+@keyframes draw{to{stroke-dashoffset:0}}
+/* ---------- glossary & dialog (same as the other lessons) ---------- */
+.term{border-bottom:1.5px dotted #6b7280;cursor:help}
+.term:hover{color:var(--acc);border-bottom-color:var(--acc)}
+#tip{position:absolute;z-index:50;max-width:340px;background:#1f2633;color:#fff;border-radius:10px;padding:10px 26px 10px 14px;font-size:13.5px;line-height:1.45;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#tip b{display:block;margin-bottom:3px;font-size:14px}
+#tip::before{content:"";position:absolute;top:-6px;left:var(--ax,20px);border:6px solid transparent;border-top:0;border-bottom-color:#1f2633}
+#tip .x{position:absolute;right:9px;top:5px;cursor:pointer;opacity:.7}
+dialog{border:none;border-radius:14px;padding:0;width:min(560px,92vw);box-shadow:0 20px 50px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(15,23,42,.45)}
+.dlg-h{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:16px}
+.dlg-b{padding:14px 18px;max-height:65vh;overflow:auto}
+.dlg-b p{margin:8px 0}
+.dlg-f{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);max-width:230px;margin:8px auto;border:2px solid #374151;border-radius:6px;overflow:hidden}
+.mini .pal{aspect-ratio:1}
+.mini .pal span{font-size:11.5px}
+select.lang{min-width:0}
+.pos{display:none}
+[hidden]{display:none!important}
+@media (max-width:900px){.panels{grid-template-columns:1fr}}
+/* ---------- phones ---------- */
+@media (max-width:700px){
+  body{font-size:16px}
+  .top{position:static;padding:10px 12px;gap:8px}
+  .top h1{font-size:16px;flex:1 1 0;min-width:0;margin:0}
+  select{font-size:16px}
+  main{padding:12px 10px calc(90px + env(safe-area-inset-bottom))}
+  .card{padding:14px}
+  .stepper{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.07);padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+  .stepper .btn{flex:1;padding:13px 8px;font-size:17px;border-radius:10px}
+  .dots,.stepper .kbd{display:none}
+  .pos{display:block;font-size:14px;color:var(--mute);white-space:nowrap;text-align:center}
+  .story h2{font-size:20px}
+  .clock{font-size:36px}
+  .ea,.he{font-size:16px}
+  .st,.dr{font-size:13px}
+  .gd{font-size:11.5px;left:4px}
+  .lab{font-size:10.5px;left:4px}
+  .big{font-size:24px}
+  .jt{grid-template-columns:1fr}
+  #tip{font-size:15px}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="home" href="../" title="All lessons / 全部课程">⌂</a>
+  <h1 data-t="h1"></h1>
+  <button class="btn" id="howBtn" data-t="how"></button>
+  <select id="lang" class="lang" aria-label="Language / 语言"><option value="en">🌐 English</option><option value="zh">🌐 简体中文</option></select>
+</div>
+<main>
+  <section id="startView" class="card hero">
+    <h2 data-t="heroTitle"></h2>
+    <p data-t="heroText"></p>
+    <div class="clock" id="clock"></div>
+    <button class="go-btn" id="goBtn" data-t="goBtn"></button>
+    <div class="alt"><span data-t="orPick"></span><input type="datetime-local" id="pickT"><button class="btn" id="pickBtn" data-t="usePick"></button></div>
+  </section>
+  <section id="lessonView" hidden>
+    <div class="card locked" id="locked"></div>
+    <div class="stepper">
+      <button class="btn" id="prev" data-t="prev"></button>
+      <div class="dots" id="dots"></div>
+      <span class="kbd" data-t="keys"></span>
+      <span class="pos" id="pos"></span>
+      <button class="btn primary" id="next"></button>
+    </div>
+    <div class="card story" id="story"></div>
+    <div class="panels">
+      <div class="card panel" style="--c:var(--c1)"><div class="sec-title" data-t="boardTitle"></div><div id="board"></div></div>
+      <div class="card panel" style="--c:var(--c3)"><div class="sec-title" data-t="workTitle"></div><div id="work"></div></div>
+    </div>
+  </section>
+</main>
+
+<div id="tip" hidden></div>
+
+<dialog id="howDlg"><form method="dialog">
+  <div class="dlg-h" data-t="howTitle"></div>
+  <div class="dlg-b" data-t="howBody"></div>
+  <div class="dlg-f"><button class="btn primary" value="ok" data-t="gotIt"></button></div>
+</form></dialog>
+
+<script>
+'use strict';
+// ---------- language ----------
+const HAS_DOM = typeof document !== 'undefined';
+let LANG = (() => {
+  if (!HAS_DOM) return 'zh';
+  const q = new URLSearchParams(location.search).get('lang');
+  if (q === 'en' || q === 'zh') return q;
+  try { const s = localStorage.getItem('learn-lang'); if (s === 'en' || s === 'zh') return s; } catch (e) {}
+  return /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
+})();
+const isZh = () => LANG === 'zh';
+const tx = (en, zh) => isZh() ? zh : en;
+const L = a => a[isZh() ? 1 : 0];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const kw = s => `<span class="kw">${s}</span>`;
+
+// ---------- the fixed tables of Qimen ----------
+const STEMS = '甲乙丙丁戊己庚辛壬癸', BRANCHES = '子丑寅卯辰巳午未申酉戌亥';
+const STEM_PY = ['jiǎ', 'yǐ', 'bǐng', 'dīng', 'wù', 'jǐ', 'gēng', 'xīn', 'rén', 'guǐ'];
+const BR_PY = ['zǐ', 'chǒu', 'yín', 'mǎo', 'chén', 'sì', 'wǔ', 'wèi', 'shēn', 'yǒu', 'xū', 'hài'];
+const GZ = i => STEMS[i % 10] + BRANCHES[i % 12];
+const mod = (a, n) => ((a % n) + n) % n;
+// Palaces by Luoshu number. Shown with south at the top, as Chinese charts are.
+const PAL = { 1: ['坎', '北', 'N', 'Kan'], 2: ['坤', '西南', 'SW', 'Kun'], 3: ['震', '东', 'E', 'Zhen'], 4: ['巽', '东南', 'SE', 'Xun'], 5: ['中', '中', 'Centre', 'Centre'], 6: ['乾', '西北', 'NW', 'Qian'], 7: ['兑', '西', 'W', 'Dui'], 8: ['艮', '东北', 'NE', 'Gen'], 9: ['离', '南', 'S', 'Li'] };
+const GRID = [4, 9, 2, 3, 5, 7, 8, 1, 6];
+const RING = [1, 8, 3, 4, 9, 2, 7, 6];           // the outer eight palaces, clockwise on screen
+const ringIdx = p => RING.indexOf(p);
+const STAR = { 1: '天蓬', 2: '天芮', 3: '天冲', 4: '天辅', 5: '天禽', 6: '天心', 7: '天柱', 8: '天任', 9: '天英' };
+const STAR_EN = { 天蓬: 'Tianpeng', 天芮: 'Tianrui', 天冲: 'Tianchong', 天辅: 'Tianfu', 天禽: 'Tianqin', 天心: 'Tianxin', 天柱: 'Tianzhu', 天任: 'Tianren', 天英: 'Tianying' };
+const DOOR = { 1: '休门', 2: '死门', 3: '伤门', 4: '杜门', 6: '开门', 7: '惊门', 8: '生门', 9: '景门' };
+const DOOR_EN = { 休门: 'Rest', 生门: 'Life', 伤门: 'Harm', 杜门: 'Block', 景门: 'View', 死门: 'Death', 惊门: 'Fright', 开门: 'Open' };
+const GODS = ['值符', '腾蛇', '太阴', '六合', '白虎', '玄武', '九地', '九天'];
+const GOD_EN = { 值符: 'Chief', 腾蛇: 'Snake', 太阴: 'Moon', 六合: 'Harmony', 白虎: 'Tiger', 玄武: 'Tortoise', 九地: 'Earth', 九天: 'Heaven' };
+const QIYI = '戊己庚辛壬癸丁丙乙';                 // six Yi, then the three Qi
+// 24 solar terms, counted from the winter solstice (sun at 270°)
+const TERMS = ['冬至', '小寒', '大寒', '立春', '雨水', '惊蛰', '春分', '清明', '谷雨', '立夏', '小满', '芒种', '夏至', '小暑', '大暑', '立秋', '处暑', '白露', '秋分', '寒露', '霜降', '立冬', '小雪', '大雪'];
+const TERMS_EN = ['Winter Solstice', 'Minor Cold', 'Major Cold', 'Start of Spring', 'Rain Water', 'Insects Awaken', 'Spring Equinox', 'Clear and Bright', 'Grain Rain', 'Start of Summer', 'Grain Buds', 'Grain in Ear', 'Summer Solstice', 'Minor Heat', 'Major Heat', 'Start of Autumn', 'End of Heat', 'White Dew', 'Autumn Equinox', 'Cold Dew', 'Frost Descends', 'Start of Winter', 'Minor Snow', 'Major Snow'];
+// Ju number for [upper, middle, lower] yuan of each term (冬至惊蛰一七四 …)
+const JU = [[1, 7, 4], [2, 8, 5], [3, 9, 6], [8, 5, 2], [9, 6, 3], [1, 7, 4], [3, 9, 6], [4, 1, 7], [5, 2, 8], [4, 1, 7], [5, 2, 8], [6, 3, 9],
+  [9, 3, 6], [8, 2, 5], [7, 1, 4], [2, 5, 8], [1, 4, 7], [9, 3, 6], [7, 1, 4], [6, 9, 3], [5, 8, 2], [6, 9, 3], [5, 8, 2], [4, 7, 1]];
+const YUAN = [['Upper', '上元'], ['Middle', '中元'], ['Lower', '下元']];
+const BR_PAL = [1, 8, 8, 3, 4, 4, 9, 2, 2, 7, 6, 6];   // which palace each branch lives in
+const CN_NUM = '〇一二三四五六七八九';
+const SHI_RANGE = h => `${String(mod(2 * h - 1, 24)).padStart(2, '0')}:00–${String(2 * h + 1).padStart(2, '0')}:00`;
+
+// names with a gloss in English mode
+const nS = s => isZh() ? s : `${s}<span class="py">${STEM_PY[STEMS.indexOf(s)]}</span>`;
+const nGZ = i => isZh() ? GZ(i) : `${GZ(i)}<span class="py">${STEM_PY[i % 10]}-${BR_PY[i % 12]}</span>`;
+const nStar = s => isZh() ? s : `${s} (${STAR_EN[s]})`;
+const nDoor = d => isZh() ? d : `${d} (${DOOR_EN[d]})`;
+const nGod = g => isZh() ? g : `${g} (${GOD_EN[g]})`;
+const nTerm = k => isZh() ? TERMS[k] : `${TERMS[k]} (${TERMS_EN[k]})`;
+const nPal = p => isZh() ? `${PAL[p][0]}${p}宫` : `palace ${p} ${PAL[p][0]} (${PAL[p][2]})`;
+const nYuan = y => L(YUAN[y]) + tx(' yuan', '');
+const nDun = (yang, ju) => tx(`${yang ? 'Yang' : 'Yin'} Dun, Ju ${ju}`, `${yang ? '阳' : '阴'}遁${CN_NUM[ju]}局`);
+
+// ---------- astronomy: where is the sun? ----------
+// Low-precision apparent solar longitude (Meeus ch. 25), good to about 0.01° = about 15 minutes of time.
+const RAD = Math.PI / 180;
+const jdOf = ms => ms / 864e5 + 2440587.5 + 69 / 86400;   // + ΔT ≈ 69 s
+function sunLon(ms) {
+  const T = (jdOf(ms) - 2451545) / 36525;
+  const L0 = 280.46646 + 36000.76983 * T + 0.0003032 * T * T;
+  const M = (357.52911 + 35999.05029 * T - 0.0001537 * T * T) * RAD;
+  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(M) + (0.019993 - 0.000101 * T) * Math.sin(2 * M) + 0.000289 * Math.sin(3 * M);
+  const Om = (125.04 - 1934.136 * T) * RAD;
+  return mod(L0 + C - 0.00569 - 0.00478 * Math.sin(Om), 360);
+}
+// The moment near `ms` when the sun reaches `target` degrees (Newton steps).
+function findCross(target, ms) {
+  for (let i = 0; i < 8; i++) ms += (mod(target - sunLon(ms) + 180, 360) - 180) / 360 * 365.2422 * 864e5;
+  return ms;
+}
+
+// ---------- casting the chart (pure) ----------
+// Conventions used here: device clock time; a new day starts at 23:00 (子时); 拆补法 for the yuan; 转盘 (rotating plate).
+function cast(ms) {
+  const dt = new Date(ms), Y = dt.getFullYear(), M = dt.getMonth() + 1, D = dt.getDate(), h = dt.getHours(), mi = dt.getMinutes();
+  const c = { ms, Y, M, D, h, mi, tz: -dt.getTimezoneOffset() };
+  // solar term
+  c.lon = sunLon(ms);
+  c.termK = Math.floor(mod(c.lon - 270, 360) / 15);
+  c.termStart = findCross(270 + 15 * c.termK, ms);
+  c.termEnd = findCross(270 + 15 * (c.termK + 1), ms);
+  c.yang = c.termK < 12;
+  // year pillar: the year changes at 立春 (sun at 315°)
+  c.lichun = findCross(315, new Date(Y, 1, 4, 12).getTime());
+  c.yr = ms >= c.lichun ? Y : Y - 1;
+  c.yearIdx = mod(c.yr - 4, 60);
+  // month pillar: 寅 month starts at 立春, every 30° after that
+  c.mo = Math.floor(mod(c.lon - 315, 360) / 30);
+  c.monthStem = mod((c.yearIdx % 10) % 5 * 2 + 2 + c.mo, 10);
+  c.monthBr = (2 + c.mo) % 12;
+  c.monthIdx = idxOf(c.monthStem, c.monthBr);
+  // day pillar: count days from 2000-01-01, a 戊午 day (number 54)
+  c.rolled = h >= 23;
+  const dayUTC = Date.UTC(Y, M - 1, D) + (c.rolled ? 864e5 : 0);
+  c.days = Math.round((dayUTC - Date.UTC(2000, 0, 1)) / 864e5);
+  c.dayIdx = mod(54 + c.days, 60);
+  // hour pillar: branch from the clock, stem by 五鼠遁
+  c.hb = Math.floor((h + 1) / 2) % 12;
+  c.hourStem = mod((c.dayIdx % 10) % 5 * 2 + c.hb, 10);
+  c.hourIdx = idxOf(c.hourStem, c.hb);
+  // yuan from the 符头 (last 甲 or 己 day)
+  c.futou = c.dayIdx - c.dayIdx % 5;
+  c.yuan = Math.floor(c.dayIdx / 5) % 3;
+  c.ju = JU[c.termK][c.yuan];
+  // earth plate
+  c.order = []; c.earth = {};
+  for (let k = 0, p = c.ju; k < 9; k++) { c.order.push(p); c.earth[p] = QIYI[k]; p = c.yang ? p % 9 + 1 : mod(p - 2, 9) + 1; }
+  const palOf = s => +Object.keys(c.earth).find(p => c.earth[p] === s);
+  // xun head
+  c.xun = Math.floor(c.hourIdx / 10);
+  c.xunYi = QIYI[c.xun];
+  c.xunPal = palOf(c.xunYi);
+  c.srcR = c.xunPal === 5 ? 2 : c.xunPal;
+  c.zfStar = STAR[c.xunPal];
+  c.zsDoor = DOOR[c.srcR];
+  // stars follow the hour stem
+  c.tgtStem = c.hourStem === 0 ? c.xunYi : STEMS[c.hourStem];
+  c.tgtPal = palOf(c.tgtStem);
+  c.tgtR = c.tgtPal === 5 ? 2 : c.tgtPal;
+  c.starShift = mod(ringIdx(c.tgtR) - ringIdx(c.srcR), 8);
+  c.heaven = {};
+  RING.forEach((p, i) => {
+    const o = RING[mod(i - c.starShift, 8)];
+    c.heaven[p] = { from: o, stars: o === 2 ? ['天芮', '天禽'] : [STAR[o]], stems: o === 2 ? [c.earth[2], c.earth[5]] : [c.earth[o]] };
+  });
+  // doors follow the hour branch: one palace per hour from the xun head
+  c.steps = c.hourIdx % 10;
+  c.doorPath = [{ i: c.xun * 10, p: c.xunPal }];
+  for (let k = 1, p = c.xunPal; k <= c.steps; k++) { p = c.yang ? p % 9 + 1 : mod(p - 2, 9) + 1; c.doorPath.push({ i: c.xun * 10 + k, p }); }
+  c.doorLand = c.doorPath[c.doorPath.length - 1].p;
+  c.doorPal = c.doorLand === 5 ? 2 : c.doorLand;
+  c.doorShift = mod(ringIdx(c.doorPal) - ringIdx(c.srcR), 8);
+  c.doors = {};
+  RING.forEach((p, i) => { c.doors[p] = DOOR[RING[mod(i - c.doorShift, 8)]]; });
+  // eight spirits start where the Chief star landed
+  c.gods = {}; c.godOrder = [];
+  GODS.forEach((g, k) => { const p = RING[mod(ringIdx(c.tgtR) + (c.yang ? k : -k), 8)]; c.gods[p] = g; c.godOrder.push([g, p]); });
+  // void and horse
+  c.kong = [mod(c.xun * 10 + 10, 12), mod(c.xun * 10 + 11, 12)];
+  c.kongPals = [...new Set(c.kong.map(b => BR_PAL[b]))];
+  c.ma = [2, 11, 8, 5][c.hb % 4];
+  c.maPal = BR_PAL[c.ma];
+  return c;
+}
+function idxOf(s, b) { for (let i = 0; i < 60; i++) if (i % 10 === s && i % 12 === b) return i; return -1; }
+
+// ---------- formatting ----------
+const pad = n => String(n).padStart(2, '0');
+function fmt(ms, sec) {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}${sec ? ':' + pad(d.getSeconds()) : ''}`;
+}
+const tzStr = m => `UTC${m >= 0 ? '+' : '−'}${Math.floor(Math.abs(m) / 60)}${Math.abs(m) % 60 ? ':' + pad(Math.abs(m) % 60) : ''}`;
+
+// ---------- UI text ----------
+const UI = {
+  h1: ['How a Qimen Dunjia chart is cast', '奇门遁甲是怎么排盘的'],
+  how: ['? How to read this', '? 怎么看这一页'],
+  prev: ['← Back', '← 上一步'],
+  keys: ['← → keys work too', '也可以用 ← → 键'],
+  boardTitle: ['The chart (south at the top)', '盘面（上南下北）'],
+  workTitle: ['How this step is worked out', '这一步是怎么算的'],
+  heroTitle: ['Cast a chart, one step at a time', '一步一步，亲手排一张盘'],
+  heroText: ['Online tools cast a Qimen chart in a blink, which makes the method hard to see. Press the button: the moment you press it is locked in, and then the chart is built in front of you, one rule at a time — four pillars, solar term, yuan, ju, earth plate, stars, doors and spirits.',
+    '网上的排盘工具一瞬间就给出结果，很难看懂背后的方法。按下按钮，这一刻就被锁定；然后一条规则一条规则地，把这一刻的盘在你眼前排出来：四柱、节气、三元、定局、地盘、九星、八门、八神。'],
+  goBtn: ['Start · lock this moment', '开始 · 锁定此刻'],
+  orPick: ['or pick a moment:', '或者选一个时间：'],
+  usePick: ['Use it', '用这个时间'],
+  howTitle: ['How to read this page', '怎么看这一页'],
+  gotIt: ['Got it', '知道了'],
+  howBody: [`<p>A Qimen chart is a 3×3 board of nine palaces. Five things are written into each outer palace, in layers. This page adds the layers one at a time:</p>
+<div class="mini">${['<span class="gd" style="font-size:11px">spirit</span><span class="he" style="font-size:12px">heaven</span><span class="st" style="font-size:11px">star</span><span class="dr" style="font-size:11px">door</span><span class="ea" style="font-size:12px">earth</span>'].map(x => `<div class="pal"></div><div class="pal">${x}</div><div class="pal"></div>`).join('')}</div>
+<p><b style="color:var(--c2)">Earth stem</b> (bottom right) · <b style="color:var(--c1)">heaven stem and star</b> (top right, middle) · <b style="color:var(--c3)">door</b> (middle) · <b style="color:var(--c4)">spirit</b> (top left).</p>
+<p>Press <b>Next</b> to go one step at a time. Each step explains a rule in the top card, shows its effect on the board, and shows the working on the right (below on a phone). Palaces that matter in the step are yellow.</p>
+<p>Tap any <span class="term" data-term="dotted" tabindex="0">underlined word</span> to see what it means.</p>`,
+    `<p>奇门盘是一个 3×3 的九宫格。外面八宫每宫都写着五样东西，一层一层叠上去。这一页一次加一层：</p>
+<div class="mini">${['<span class="gd" style="font-size:11px">八神</span><span class="he" style="font-size:12px">天</span><span class="st" style="font-size:11px">九星</span><span class="dr" style="font-size:11px">八门</span><span class="ea" style="font-size:12px">地</span>'].map(x => `<div class="pal"></div><div class="pal">${x}</div><div class="pal"></div>`).join('')}</div>
+<p><b style="color:var(--c2)">地盘干</b>（右下）· <b style="color:var(--c1)">天盘干和九星</b>（右上、中间）· <b style="color:var(--c3)">八门</b>（中间）· <b style="color:var(--c4)">八神</b>（左上）。</p>
+<p>按<b>下一步</b>一步一步往下看。每一步在上面的卡片里讲一条规则，在盘上显示它的结果，在右边（手机上在下面）列出计算过程。这一步要看的宫会标成黄色。</p>
+<p>点击任何<span class="term" data-term="dotted" tabindex="0">带下划线的词</span>查看它的意思。</p>`],
+};
+const U = k => L(UI[k]);
+
+// ---------- glossary ----------
+const GLOSS = {
+  en: {
+    dotted: ['Like this', 'Tap any underlined word to see what it means. Tap anywhere else or press Esc to close.'],
+    ganzhi: ['Stems and branches (干支)', 'The traditional Chinese counter: 10 heavenly stems (甲乙丙丁戊己庚辛壬癸) paired with 12 earthly branches (子丑寅卯…). Pairing them in step gives a cycle of 60, used for years, months, days and hours.'],
+    sizhu: ['Four pillars (四柱)', 'The stem-branch pairs for the year, month, day and hour of a moment.'],
+    wushu: ['Five Rats rule (五鼠遁)', 'Finds the stem of an hour from the stem of the day: 甲/己 days start their 子 hour with 甲, 乙/庚 with 丙, 丙/辛 with 戊, 丁/壬 with 庚, 戊/癸 with 壬.'],
+    wuhu: ['Five Tigers rule (五虎遁)', 'Finds the stem of a month from the stem of the year: 甲/己 years start their 寅 month with 丙, and so on in steps of two.'],
+    jiugong: ['Nine palaces (九宫)', 'The nine squares of the board. Each has a number from the Luoshu square and one of the eight trigrams.'],
+    luoshu: ['Luoshu (洛书)', 'An ancient 3×3 magic square: every row, column and diagonal adds up to 15. Its numbers give each palace its number.'],
+    houtian: ['Later Heaven trigrams (后天八卦)', 'King Wen’s arrangement of the eight trigrams around the compass: 离 south, 坎 north, 震 east, 兑 west, and so on.'],
+    jieqi: ['Solar term (节气)', 'The year is cut into 24 parts by the sun’s position along the ecliptic, one every 15°. The winter solstice is at 270°.'],
+    yang: ['Yang Dun (阳遁)', 'The half-year from the winter solstice to just before the summer solstice. Numbers are walked forwards: 1→2→3…'],
+    yin: ['Yin Dun (阴遁)', 'The half-year from the summer solstice to just before the winter solstice. Numbers are walked backwards: 9→8→7…'],
+    sanyuan: ['Three yuan (三元)', 'Each solar term (about 15 days) is split into an upper, middle and lower yuan of 5 days each. Each one uses a different ju.'],
+    chaibu: ['Chaibu method (拆补法)', 'Use the real current solar term, and take the yuan from the 符头 day. Simple, and what most apps use by default.'],
+    zhirun: ['Zhirun method (置闰法)', 'An older method that keeps each yuan tied to its 符头 even when the solar term has already changed, and inserts a repeated “leap” term about twice a year. It can give a different ju near a term change.'],
+    futou: ['Futou (符头)', 'The first day of a 5-day yuan: always a 甲 or 己 day. Its branch says which yuan it is.'],
+    ju: ['Ju (局)', 'The “setting” for the chart: Yang or Yin, and a number 1–9. The number is the palace where 戊 is placed.'],
+    dipan: ['Earth plate (地盘)', 'The nine stems placed in the palaces by the ju. It stays fixed for the whole yuan; the other layers turn over it.'],
+    liuyi: ['Six Yi (六仪)', '戊己庚辛壬癸, the six stems that hide the six 甲.'],
+    sanqi: ['Three Qi (三奇)', '乙丙丁, the “three wonders”, placed after the Six Yi in the order 丁丙乙.'],
+    dunjia: ['Hidden Jia (遁甲)', '甲 never appears on the board. Each of the six 甲 days/hours (甲子, 甲戌…) hides under one of the Six Yi. That is the “遁甲” in the name.'],
+    xun: ['Xun (旬)', 'A run of ten in the 60-cycle, always starting with a 甲: 甲子旬, 甲戌旬, 甲申旬, 甲午旬, 甲辰旬, 甲寅旬.'],
+    zhifu: ['Chief star (值符)', 'The star of the palace where this hour’s xun head hides on the earth plate. It leads the stars.'],
+    zhishi: ['Chief door (值使)', 'The door of the same palace. It leads the doors.'],
+    zfsg: ['值符随时干', '“The Chief star follows the hour stem”: it moves to the palace where the hour’s stem sits on the earth plate.'],
+    zssz: ['值使随时支', '“The Chief door follows the hour branch”: it walks one palace per hour from the xun head.'],
+    tianpan: ['Heaven plate (天盘)', 'The stems carried by the stars as they turn. Each star brings the earth stem of its home palace.'],
+    bashen: ['Eight spirits (八神)', '值符 腾蛇 太阴 六合 白虎 玄武 九地 九天, laid round the board starting where the Chief star is.'],
+    jikun: ['Centre lodges in Kun (中五寄坤)', 'The centre palace 5 has no door and is not on the ring, so whatever lands there is treated as being in palace 2 (坤). The centre star 天禽 travels with 天芮.'],
+    fuyin: ['Fuyin (伏吟)', 'When the stars (or doors) do not move, so they sit in their home palaces. Readers treat it as “stuck, nothing moves”.'],
+    zhuanpan: ['Rotating plate (转盘)', 'The common modern way: stars, doors and spirits turn round the eight outer palaces like a wheel, keeping their order. The older “flying plate” (飞盘) moves them along the Luoshu numbers instead.'],
+    kongwang: ['Void (空亡)', 'A xun pairs ten stems with ten branches, so two branches are left out. They are “void” for that xun.'],
+    maxing: ['Horse star (驿马)', 'Movement. From the hour branch: 申子辰 → 寅, 寅午戌 → 申, 巳酉丑 → 亥, 亥卯未 → 巳.'],
+    solar: ['True solar time (真太阳时)', 'Clock time corrected for your longitude and the time of year, so that noon is when the sun is highest. Some practitioners use it for the hour; this page uses your clock.'],
+  },
+  zh: {
+    dotted: ['就像这样', '点击任何带下划线的词，查看它的意思。点击其他地方或按 Esc 关闭。'],
+    ganzhi: ['干支', '十天干（甲乙丙丁戊己庚辛壬癸）和十二地支（子丑寅卯……）依次配对，60 个一循环，用来记年、月、日、时。'],
+    sizhu: ['四柱', '某一时刻的年、月、日、时各一对干支。'],
+    wushu: ['五鼠遁', '由日干推时干：甲己还加甲，乙庚丙作初，丙辛从戊起，丁壬庚子居，戊癸何方发，壬子是真途。'],
+    wuhu: ['五虎遁', '由年干推月干：甲己之年丙作首，乙庚之岁戊为头，丙辛必定寻庚起，丁壬壬位顺行流，戊癸何方发，甲寅之上好追求。'],
+    jiugong: ['九宫', '盘上的九个格子。每宫有一个洛书数和一个八卦。'],
+    luoshu: ['洛书', '古老的 3×3 幻方：每行、每列、每条对角线加起来都是 15。九宫的数字就来自它。'],
+    houtian: ['后天八卦', '文王八卦方位：离南、坎北、震东、兑西、巽东南、坤西南、乾西北、艮东北。'],
+    jieqi: ['节气', '按太阳在黄道上的位置把一年分成 24 份，每 15° 一个。冬至在 270°。'],
+    yang: ['阳遁', '从冬至到芒种这半年。数字顺着走：1→2→3……'],
+    yin: ['阴遁', '从夏至到大雪这半年。数字倒着走：9→8→7……'],
+    sanyuan: ['三元', '每个节气约 15 天，分成上元、中元、下元，各 5 天，各用一个局。'],
+    chaibu: ['拆补法', '节气按真实交节时刻算，元按符头的地支定。简单直接，大多数排盘软件默认用它。'],
+    zhirun: ['置闰法', '更古老的方法：让符头和节气对齐，超过一定天数就“置闰”重复一个节气的三元。在交节前后可能和拆补法得出不同的局。'],
+    futou: ['符头', '一元 5 天里的第一天，总是甲日或己日。它的地支决定是哪一元。'],
+    ju: ['局', '这张盘的“设定”：阳遁或阴遁，加上 1–9 的一个数字。这个数字就是“戊”放在第几宫。'],
+    dipan: ['地盘', '按局数放进九宫的九个干。整个一元之内都不变，其他几层在它上面转。'],
+    liuyi: ['六仪', '戊己庚辛壬癸，六甲就藏在它们下面。'],
+    sanqi: ['三奇', '乙丙丁，按 丁丙乙 的顺序排在六仪后面。'],
+    dunjia: ['遁甲', '甲不出现在盘上。六个甲（甲子、甲戌……）各藏在一个六仪下面：甲子戊、甲戌己、甲申庚、甲午辛、甲辰壬、甲寅癸。“遁甲”就是这个意思。'],
+    xun: ['旬', '六十甲子每十个一组，总以甲开头：甲子旬、甲戌旬、甲申旬、甲午旬、甲辰旬、甲寅旬。'],
+    zhifu: ['值符', '本时辰旬首所藏之仪在地盘哪一宫，那一宫原来的星就是值符，九星由它带领。'],
+    zhishi: ['值使', '同一宫原来的门就是值使，八门由它带领。'],
+    zfsg: ['值符随时干', '值符星转到时干在地盘上所在的宫。'],
+    zssz: ['值使随时支', '值使门从旬首所在宫出发，每过一个时辰走一宫。'],
+    tianpan: ['天盘', '九星转动时带着走的干。每颗星带着自己原来那一宫的地盘干。'],
+    bashen: ['八神', '值符、腾蛇、太阴、六合、白虎、玄武、九地、九天，从值符星所在的宫开始绕一圈排开。'],
+    jikun: ['中五寄坤', '中五宫没有门，也不在外圈上，落到中五的东西都当作在坤二宫。中宫的天禽星随天芮一起走。'],
+    fuyin: ['伏吟', '星（或门）没有动，都在自己原来的宫里。一般认为是“停滞、不动”的象。'],
+    zhuanpan: ['转盘', '现在最常用的排法：九星、八门、八神像轮子一样绕外圈八宫整体转动，次序不变。另一种“飞盘”是按洛书数字飞布的。'],
+    kongwang: ['空亡', '一旬十个天干配十个地支，剩下两个地支没配上，这两个地支在这一旬里就是“空亡”。'],
+    maxing: ['驿马', '主动、变动。看时支：申子辰马在寅，寅午戌马在申，巳酉丑马在亥，亥卯未马在巳。'],
+    solar: ['真太阳时', '按所在经度和日期修正后的时间，让正午就是太阳最高的时候。有些人用它来定时辰；这一页用的是你设备上的钟表时间。'],
+  },
+};
+const G = () => GLOSS[LANG];
+const T = (k, txt) => `<span class="term" data-term="${k}" tabindex="0">${txt || G()[k][0]}</span>`;
+
+// ---------- the board ----------
+// st: {layers:['earth','heaven','door','god','marks'], hl:[pal], src:[pal], fresh:'earth'|…, lines:[[p1,p2,color]], tags:{p:text}}
+const CEN = p => { const i = GRID.indexOf(p); return [50 + 100 * (i % 3), 50 + 100 * Math.floor(i / 3)]; };
+function arrow(a, b, color, delay, k) {
+  const [x1, y1] = CEN(a), [x2, y2] = CEN(b), d = Math.hypot(x2 - x1, y2 - y1), s = 24 / d;
+  const p = [x1 + (x2 - x1) * s, y1 + (y2 - y1) * s, x2 - (x2 - x1) * s, y2 - (y2 - y1) * s].map(v => v.toFixed(1));
+  return `<line class="draw" pathLength="100" x1="${p[0]}" y1="${p[1]}" x2="${p[2]}" y2="${p[3]}" stroke="${color}" marker-end="url(#ah${k})" style="animation-delay:${delay}s"/>`;
+}
+function boardHtml(c, st) {
+  const has = k => st.layers.includes(k), hl = new Set(st.hl || []), src = new Set(st.src || []);
+  const fresh = (k, d) => st.fresh === k ? ` new" style="animation-delay:${d.toFixed(2)}s` : '';
+  const cells = GRID.map(p => {
+    let h = `<div class="pal c${p}${hl.has(p) ? ' hl' : src.has(p) ? ' src' : ''}">`;
+    h += `<span class="lab">${PAL[p][0]}${p}${has('earth') ? '' : ` · ${tx(PAL[p][2], PAL[p][1])}`}</span>`;
+    if (!has('earth')) h += `<span class="big">${p}<small>${PAL[p][0]}${isZh() ? '' : ' ' + PAL[p][3]}</small></span>`;
+    if (has('earth')) h += `<span class="ea${fresh('earth', c.order.indexOf(p) * 0.35)}">${c.earth[p]}</span>`;
+    if (p !== 5) {
+      const ri = mod(ringIdx(p) - ringIdx(c.tgtR), 8) * 0.12;
+      if (has('heaven')) {
+        const hv = c.heaven[p];
+        h += `<span class="he${fresh('heaven', ri)}">${hv.stems.join('')}</span>`;
+        h += `<span class="st${fresh('heaven', ri)}">${hv.stars[0]}${hv.stars[1] ? `<small>+${hv.stars[1].slice(1)}</small>` : ''}</span>`;
+      }
+      if (has('door')) h += `<span class="dr${fresh('door', mod(ringIdx(p) - ringIdx(c.doorPal), 8) * 0.12)}">${c.doors[p]}</span>`;
+      if (has('god')) h += `<span class="gd${fresh('god', GODS.indexOf(c.gods[p]) * 0.15)}">${c.gods[p]}</span>`;
+    } else if (has('heaven')) h += `<span class="ji">${tx('lodged in 2', '寄坤二')}</span>`;
+    if (has('marks')) {
+      const m = (c.kongPals.includes(p) ? `<i class="k">${tx('void', '空')}</i>` : '') + (c.maPal === p ? `<i class="m">${tx('horse', '马')}</i>` : '');
+      if (m) h += `<span class="mk${fresh('marks', 0)}">${m}</span>`;
+    }
+    if (st.tags && st.tags[p]) h += `<span class="tag">${st.tags[p]}</span>`;
+    return h + '</div>';
+  }).join('');
+  const lines = st.lines || [];
+  const svg = lines.length ? `<svg class="overlay" viewBox="0 0 300 300" preserveAspectRatio="none" aria-hidden="true"><defs>${lines.map((l, k) => `<marker id="ah${k}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="${l[2]}" stroke="none"/></marker>`).join('')}</defs>${lines.map((l, k) => arrow(l[0], l[1], l[2], l[3] || 0, k)).join('')}</svg>` : '';
+  const leg = [has('earth') && `<span><b style="color:var(--c2)">■</b> ${tx('earth stem', '地盘干')}</span>`, has('heaven') && `<span><b style="color:var(--c1)">■</b> ${tx('star · heaven stem', '九星 · 天盘干')}</span>`,
+    has('door') && `<span><b style="color:var(--c3)">■</b> ${tx('door', '八门')}</span>`, has('god') && `<span><b style="color:var(--c4)">■</b> ${tx('spirit', '八神')}</span>`].filter(Boolean).join('');
+  return `<div class="board">${cells}${svg}</div>${leg ? `<div class="legendrow">${leg}</div>` : ''}`;
+}
+
+// ---------- work-panel pieces ----------
+function pillarsHtml(c) {
+  const row = (lab, i, how, on) => `<tr class="${on ? 'on' : ''}"><td>${lab}</td><td class="gz">${nGZ(i)}</td><td style="font-size:13px">${how}</td></tr>`;
+  const startShi = mod(c.dayIdx % 10 % 5 * 2, 10);
+  let h = `<table class="t"><tr><th></th><th>${tx('Pillar', '干支')}</th><th>${tx('How', '怎么来的')}</th></tr>`;
+  h += row(tx('Year', '年'), c.yearIdx, tx(`The year turns at 立春 (${fmt(c.lichun)}), not on 1 January. (${c.yr} − 4) mod 60 = ${c.yearIdx}.`, `年以立春（${fmt(c.lichun)}）为界，不是 1 月 1 日。(${c.yr} − 4) mod 60 = ${c.yearIdx}。`));
+  h += row(tx('Month', '月'), c.monthIdx, tx(`Months also turn at the sun’s position: sun at ${c.lon.toFixed(1)}° → month ${c.mo + 1} counted from 寅 at 立春. Stem by the ${T('wuhu')}.`, `月也按太阳位置换：太阳在 ${c.lon.toFixed(1)}° → 从立春的寅月数起第 ${c.mo + 1} 个月。月干用${T('wuhu')}。`));
+  h += row(tx('Day', '日'), c.dayIdx, tx(`2000-01-01 was a 戊午 day (number 54). ${c.days} days later: (54 + ${c.days}) mod 60 = ${c.dayIdx}.${c.rolled ? ' After 23:00 the next day has begun.' : ''}`, `2000-01-01 是戊午日（第 54 号）。过了 ${c.days} 天：(54 + ${c.days}) mod 60 = ${c.dayIdx}。${c.rolled ? '23 点以后算第二天。' : ''}`), true);
+  h += row(tx('Hour', '时'), c.hourIdx, tx(`${pad(c.h)}:${pad(c.mi)} is in the ${BRANCHES[c.hb]} hour. On a ${STEMS[c.dayIdx % 10]} day the 子 hour is ${STEMS[startShi]}子 (${T('wushu')}); count on ${c.hb} → ${GZ(c.hourIdx)}.`, `${pad(c.h)}:${pad(c.mi)} 在${BRANCHES[c.hb]}时。${STEMS[c.dayIdx % 10]}日的子时是${STEMS[startShi]}子（${T('wushu')}），往后数 ${c.hb} 个 → ${GZ(c.hourIdx)}。`), true);
+  h += '</table>';
+  h += `<div class="sec-title" style="margin-top:12px">${tx('The 12 double-hours', '十二时辰')}</div><div class="chips">${[...BRANCHES].map((b, i) => `<span class="chip${i === c.hb ? ' on' : ''}">${b}<small>${SHI_RANGE(i)}</small></span>`).join('')}</div>`;
+  return h;
+}
+function palTableHtml() {
+  return `<table class="t"><tr><th>${tx('Palace', '宫')}</th><th>${tx('Direction', '方位')}</th><th>${tx('Home star', '本位星')}</th><th>${tx('Home door', '本位门')}</th></tr>`
+    + [1, 8, 3, 4, 9, 2, 7, 6, 5].map(p => `<tr><td><b>${p} ${PAL[p][0]}</b></td><td>${tx(PAL[p][2], PAL[p][1])}</td><td>${nStar(STAR[p])}</td><td>${DOOR[p] ? nDoor(DOOR[p]) : `<span class="none">${tx('none', '无')}</span>`}</td></tr>`).join('') + '</table>';
+}
+function wheelSvg(c) {
+  const R = 112, cx = 160, cy = 160;
+  const pt = (lon, r) => { const t = mod(lon - 270, 360) * RAD; return [cx - r * Math.sin(t), cy + r * Math.cos(t)]; };
+  let s = `<svg class="wheel" viewBox="0 0 320 320" role="img" aria-label="${tx('Solar terms wheel', '二十四节气圈')}">`;
+  // halves: yang = winter solstice → summer solstice (left side), yin = right side
+  s += `<path d="M${cx},${cy + R} A${R},${R} 0 0,1 ${cx},${cy - R} L${cx},${cy}Z" fill="#fef3c7"/><path d="M${cx},${cy - R} A${R},${R} 0 0,1 ${cx},${cy + R} L${cx},${cy}Z" fill="#e0e7ff"/>`;
+  s += `<text x="${cx - 50}" y="${cy + 5}" text-anchor="middle" font-size="15" font-weight="800" fill="#b45309">${tx('Yang', '阳遁')}</text><text x="${cx + 50}" y="${cy + 5}" text-anchor="middle" font-size="15" font-weight="800" fill="#4338ca">${tx('Yin', '阴遁')}</text>`;
+  for (let k = 0; k < 24; k++) {
+    const lon = 270 + 15 * k, [x1, y1] = pt(lon, R - 6), [x2, y2] = pt(lon, R + 4), [tx_, ty] = pt(lon + 7.5, R + 22), on = k === c.termK;
+    s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#94a3b8"/>`;
+    s += `<text x="${tx_}" y="${ty + 4}" text-anchor="middle" font-size="${on ? 12 : 10}" font-weight="${on ? 800 : 400}" fill="${on ? '#b91c1c' : '#475569'}">${TERMS[k]}</text>`;
+  }
+  s += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#94a3b8"/>`;
+  const [sx, sy] = pt(c.lon, R);
+  s += `<line x1="${cx}" y1="${cy}" x2="${sx}" y2="${sy}" stroke="#dc2626" stroke-dasharray="3 3"/><circle cx="${sx}" cy="${sy}" r="9" fill="#f59e0b" stroke="#fff" stroke-width="2"/>`;
+  s += `<text x="${cx}" y="${cy + R - 16}" text-anchor="middle" font-size="10" fill="#64748b">${tx('N · winter', '北 · 冬')}</text><text x="${cx}" y="${cy - R + 24}" text-anchor="middle" font-size="10" fill="#64748b">${tx('S · summer', '南 · 夏')}</text>`;
+  return s + '</svg>';
+}
+function yuanChips(c) {
+  const heads = Array.from({ length: 12 }, (_, k) => k * 5);
+  let h = `<div class="chips">${heads.map(i => `<span class="chip y${(i / 5) % 3}${i === c.futou ? ' on' : ''}">${GZ(i)}<small>${L(YUAN[(i / 5) % 3])}</small></span>`).join('')}</div>`;
+  h += `<div class="sec-title" style="margin-top:12px">${tx('This yuan’s five days', '本元的五天')}</div><div class="chips">${[0, 1, 2, 3, 4].map(k => `<span class="chip${c.futou + k === c.dayIdx ? ' on' : ''}">${GZ(c.futou + k)}<small>${k === 0 ? tx('futou', '符头') : c.futou + k === c.dayIdx ? tx('today', '今天') : ''}</small></span>`).join('')}</div>`;
+  return h;
+}
+function juTable(c) {
+  const half = (from, title) => `<div><h4>${title}</h4><table class="t">${[...Array(12)].map((_, j) => {
+    const k = from + j, row = k === c.termK;
+    return `<tr class="${row ? 'row' : ''}"><td>${TERMS[k]}</td>${JU[k].map((n, y) => `<td class="c${row && y === c.yuan ? ' on' : ''}">${n}</td>`).join('')}</tr>`;
+  }).join('')}</table></div>`;
+  return `<div class="jt">${half(0, tx('Yang Dun · upper / middle / lower', '阳遁 · 上 / 中 / 下'))}${half(12, tx('Yin Dun · upper / middle / lower', '阴遁 · 上 / 中 / 下'))}</div>`;
+}
+const VERSE = `冬至惊蛰一七四，小寒二八五相随，大寒春分三九六，雨水九六三为期，清明立夏四一七，立春八五二相宜，谷雨小满五二八，芒种六三九是真。<br>夏至白露九三六，小暑八二五之间，大暑秋分七一四，立秋二五八循环，寒露立冬六九三，处暑一四七宜知，霜降小雪五八二，大雪四七一相关。`;
+
+// ---------- the steps ----------
+// Each step: {title, short, story, takeaway, work, board}
+function buildSteps(c) {
+  const dun = nDun(c.yang, c.ju), dir = c.yang ? tx('forwards (1→2→3…)', '顺行（1→2→3……）') : tx('backwards (9→8→7…)', '逆行（9→8→7……）');
+  const xunName = GZ(c.xun * 10), term = nTerm(c.termK), base = ['earth'];
+  const tag = (p, t) => ({ [p]: t });
+  const S = [];
+  S.push({ short: tx('Pillars', '四柱'), title: tx('Lock the moment → four pillars', '锁定此刻 → 四柱'),
+    story: tx(`The moment is locked: <b>${fmt(c.ms, true)}</b> (${tzStr(c.tz)}). Qimen does not work with the calendar date directly. First the moment is turned into ${T('ganzhi', 'stems and branches')}: one pair each for year, month, day and hour, the ${T('sizhu', 'four pillars')}. An hour chart (时家奇门) really needs only the <b>day</b> and <b>hour</b> pillars, plus the solar term in step 3.`,
+      `时间锁定在 <b>${fmt(c.ms, true)}</b>（${tzStr(c.tz)}）。奇门不直接用公历日期，先要把这一刻换成${T('ganzhi')}：年、月、日、时各一对，叫${T('sizhu')}。时家奇门真正要用的是<b>日柱</b>和<b>时柱</b>，再加上第 3 步的节气。`),
+    takeaway: tx(`Day ${kw(nGZ(c.dayIdx))}, hour ${kw(nGZ(c.hourIdx))}. A Chinese “hour” (时辰) is two clock hours, so the chart stays the same for up to two hours. This page uses your clock time; some people correct it to ${T('solar')} first.${c.rolled ? ' Because it is after 23:00, the 子 hour of the <b>next</b> day has begun, so the day pillar is tomorrow’s.' : ''}`,
+      `日柱 ${kw(GZ(c.dayIdx))}，时柱 ${kw(GZ(c.hourIdx))}。一个时辰是两个钟头，所以同一个时辰里排出来的盘都一样。这一页用你设备上的钟表时间；也有人先换成${T('solar')}。${c.rolled ? '现在已过 23 点，<b>第二天</b>的子时已经开始，所以日柱用的是明天。' : ''}`),
+    work: pillarsHtml(c), board: { layers: [] } });
+  S.push({ short: tx('Board', '九宫'), title: tx('Meet the board: nine palaces', '认识盘面：九宫'),
+    story: tx(`The chart is a 3×3 board of ${T('jiugong', 'nine palaces')}. Each has a ${T('luoshu')} number and a trigram from the ${T('houtian', 'Later Heaven')} order. Note: <b>south is at the top</b>, so 坎 1 (north) is bottom-middle and 离 9 (south) top-middle.`,
+      `盘是一个 3×3 的${T('jiugong')}。每宫有一个${T('luoshu')}数字和一个${T('houtian')}的卦。注意<b>南在上、北在下</b>，所以坎1（北）在下面正中，离9（南）在上面正中。`),
+    takeaway: tx(`Two ways of walking the board will be used. “By number” is 1→2→…→9, jumping around the board (step 6). “Round the ring” goes round the eight outer palaces, 坎1→艮8→震3→巽4→离9→坤2→兑7→乾6 (the arrows): stars, doors and spirits turn this way. Each outer palace also has a home star and a home door (table).`,
+      `排盘时有两种走法。“按数字走”是 1→2→…→9，在盘上跳来跳去（第 6 步）。“绕圈走”是沿外圈八宫：坎1→艮8→震3→巽4→离9→坤2→兑7→乾6（图上的箭头），九星、八门、八神都这样转。每个外宫还有一颗本位星、一个本位门（右表）。`),
+    work: palTableHtml(), board: { layers: [], lines: RING.map((p, i) => [p, RING[(i + 1) % 8], '#64748b', i * 0.1]) } });
+  S.push({ short: tx('Term', '节气'), title: tx(`Solar term → ${c.yang ? 'Yang' : 'Yin'} Dun`, `节气 → ${c.yang ? '阳' : '阴'}遁`),
+    story: tx(`Next, decide ${T('yang', 'Yang Dun')} or ${T('yin', 'Yin Dun')}. This comes from the ${T('jieqi', 'solar term')}, which is just where the sun is. Right now the sun is at <b>${c.lon.toFixed(2)}°</b> along the ecliptic, inside <b>${term}</b>: it began ${fmt(c.termStart)} and the next term starts ${fmt(c.termEnd)}.`,
+      `接下来要定${T('yang')}还是${T('yin')}。这由${T('jieqi')}决定，节气就是太阳在哪儿。此刻太阳黄经 <b>${c.lon.toFixed(2)}°</b>，处在 <b>${term}</b>：${fmt(c.termStart)} 交节，${fmt(c.termEnd)} 交下一个节气。`),
+    takeaway: tx(`From the winter solstice to Grain in Ear (the left half) the days grow longer and yang rises: Yang Dun. From the summer solstice to Major Snow: Yin Dun. ${term} is <b>${c.yang ? 'Yang' : 'Yin'} Dun</b>, so from now on numbers are walked ${dir}.`,
+      `冬至到芒种（左半圈）白天越来越长，阳气上升，用阳遁；夏至到大雪用阴遁。${term}属于<b>${c.yang ? '阳' : '阴'}遁</b>，所以后面凡是“走数字”，都${dir}。`),
+    work: wheelSvg(c) + `<div class="cmp">${tx(`Term number = ⌊(${c.lon.toFixed(2)}° − 270°) mod 360 ÷ 15⌋ = ${c.termK} → ${TERMS[c.termK]}`, `节气序号 = ⌊(${c.lon.toFixed(2)}° − 270°) mod 360 ÷ 15⌋ = ${c.termK} → ${TERMS[c.termK]}`)}</div>`,
+    board: { layers: [] } });
+  S.push({ short: tx('Yuan', '三元'), title: tx(`Which yuan? → ${nYuan(c.yuan)}`, `哪一元？→ ${nYuan(c.yuan)}`),
+    story: tx(`A solar term lasts about 15 days and is cut into ${T('sanyuan', 'three yuan')} of 5 days each. By the ${T('chaibu', 'Chaibu method')}, find the first day of today’s 5-day block, the ${T('futou')}. It is always a 甲 or 己 day. Today is ${kw(nGZ(c.dayIdx))}; ${c.dayIdx % 5 ? `count back ${c.dayIdx % 5} day${c.dayIdx % 5 > 1 ? 's' : ''} to ` : 'it is itself the futou: '}${kw(nGZ(c.futou))}.`,
+      `一个节气约 15 天，分成${T('sanyuan')}，每元 5 天。按${T('chaibu')}，找出今天这 5 天的第一天，叫${T('futou')}，它总是甲日或己日。今天是 ${kw(GZ(c.dayIdx))}，${c.dayIdx % 5 ? `往前数 ${c.dayIdx % 5} 天就是符头 ` : '它自己就是符头 '}${kw(GZ(c.futou))}。`),
+    takeaway: tx(`The futou’s branch names the yuan: 子午卯酉 → upper, 寅申巳亥 → middle, 辰戌丑未 → lower. ${GZ(c.futou)} ends in ${BRANCHES[c.futou % 12]}, so this is the <b>${nYuan(c.yuan)}</b>. The 60 days cycle through upper, middle, lower in turn (the coloured chips).`,
+      `符头的地支决定是哪一元：子午卯酉 → 上元，寅申巳亥 → 中元，辰戌丑未 → 下元。${GZ(c.futou)} 的地支是${BRANCHES[c.futou % 12]}，所以是<b>${nYuan(c.yuan)}</b>。六十甲子里，上、中、下元就这样轮流出现（上面带颜色的小方块）。`),
+    work: `<div class="sec-title">${tx('The 12 futou days in 60', '六十甲子里的 12 个符头')}</div>` + yuanChips(c), board: { layers: [] } });
+  S.push({ short: tx('Ju', '定局'), title: tx(`Look up the ju → ${dun}`, `查表定局 → ${dun}`),
+    story: tx(`Solar term + yuan → look up the ${T('ju')} number in a fixed table (a rhyme every student memorises). ${term}, ${nYuan(c.yuan)} → <b>${c.ju}</b>. So this hour is cast as <b>${dun}</b>.`,
+      `节气 + 元 → 在一张固定的表里查出${T('ju', '局数')}（就是学奇门都要背的那首歌诀）。${term}${nYuan(c.yuan)} → <b>${c.ju}</b>。所以这个时辰排的是<b>${dun}</b>。`),
+    takeaway: tx(`Look at any row: in Yang Dun the three numbers go up by 6 (mod 9), in Yin Dun down by 6. The number is simply the palace where 戊 will be placed in the next step. The older ${T('zhirun', 'Zhirun method')} can give a different ju in the days around a term change.`,
+      `看任何一行：阳遁三个数依次加 6（满 9 减 9），阴遁依次减 6。这个数字就是下一步“戊”要放的宫。较古老的${T('zhirun')}在交节前后几天可能得出不同的局。`),
+    work: juTable(c) + `<div class="verse">${VERSE}</div>`, board: { layers: [], hl: [c.ju] } });
+  S.push({ short: tx('Earth', '地盘'), title: tx('Lay out the earth plate', '布地盘'),
+    story: tx(`The ju says where ${kw('戊')} goes: Ju ${c.ju} → palace ${c.ju}. Then lay the other stems in a fixed order — the ${T('liuyi', 'Six Yi')} 戊己庚辛壬癸, then the ${T('sanqi', 'Three Qi')} 丁丙乙 — one per palace, walking the Luoshu numbers ${dir}. Watch the arrows.`,
+      `局数告诉我们 ${kw('戊')} 放在哪：${CN_NUM[c.ju]}局 → 戊在 ${c.ju} 宫。然后按固定顺序——${T('liuyi')} 戊己庚辛壬癸，接着${T('sanqi')} 丁丙乙——一宫放一个，按洛书数字${dir}。看盘上的箭头。`),
+    takeaway: tx(`Nine stems fill nine palaces: this is the ${T('dipan', 'earth plate')}, the part that does not move. Where is 甲? It never appears. The most honoured stem hides under the Six Yi — the ${T('dunjia', 'hidden Jia')} that gives Qimen <i>Dunjia</i> its name. The next step uses that.`,
+      `九个干正好填满九宫，这就是${T('dipan')}，盘里不动的部分。甲在哪？它从不出现。最尊贵的甲藏在六仪下面——这就是“${T('dunjia')}”，也是奇门遁甲名字的来历。下一步就要用到它。`),
+    work: `<table class="t"><tr><th>#</th><th>${tx('Stem', '干')}</th><th>${tx('Goes to', '放到')}</th></tr>${c.order.map((p, k) => `<tr><td>${k + 1}</td><td class="gz">${nS(QIYI[k])}<span class="py">${k < 6 ? tx('Yi', '六仪') : tx('Qi', '三奇')}</span></td><td>${nPal(p)}</td></tr>`).join('')}</table>`,
+    board: { layers: base, fresh: 'earth', hl: [c.ju], lines: c.order.slice(1).map((p, k) => [c.order[k], p, '#0d9488', k * 0.35 + 0.2]) } });
+  S.push({ short: tx('Xun', '旬首'), title: tx(`Xun head → Chief star and Chief door`, `旬首 → 值符、值使`),
+    story: tx(`Now the hour pillar ${kw(nGZ(c.hourIdx))}. The 60-cycle runs in ${T('xun', 'xun')} of ten, each led by a 甲. ${GZ(c.hourIdx)} is in the <b>${xunName}</b> xun. ${xunName} hides under ${kw(nS(c.xunYi))}. On the earth plate, ${c.xunYi} is in <b>${nPal(c.xunPal)}</b>.`,
+      `现在看时柱 ${kw(GZ(c.hourIdx))}。六十甲子十个一${T('xun')}，每旬以甲开头。${GZ(c.hourIdx)} 在 <b>${xunName}旬</b>。${xunName} 藏在 ${kw(c.xunYi)} 下面。地盘上 ${c.xunYi} 在 <b>${nPal(c.xunPal)}</b>。`),
+    takeaway: (c.xunPal === 5
+      ? tx(`That palace is the centre, which has no door: by ${T('jikun')}, the ${T('zhifu', 'Chief star')} is <b>${nStar('天禽')}</b> (travelling with 天芮) and the ${T('zhishi', 'Chief door')} is 坤’s <b>${nDoor('死门')}</b>.`,
+        `这一宫是中五，没有门：按${T('jikun')}，${T('zhifu')}是 <b>天禽</b>（随天芮同行），${T('zhishi')}用坤宫的 <b>死门</b>。`)
+      : tx(`The star and door that live in that palace become this hour’s ${T('zhifu', 'Chief star')} <b>${nStar(c.zfStar)}</b> and ${T('zhishi', 'Chief door')} <b>${nDoor(c.zsDoor)}</b>.`,
+        `住在这一宫的星和门，就是这个时辰的${T('zhifu')} <b>${c.zfStar}</b> 和${T('zhishi')} <b>${c.zsDoor}</b>。`))
+      + tx(' They lead: the next two steps move them, and the rest follow.', '它们是“领头的”：后面两步移动它们，其他的跟着走。'),
+    work: `<table class="t"><tr><th>${tx('Xun', '旬')}</th><th>${tx('hides under', '藏于')}</th><th>${tx('Ten hours', '十个时辰')}</th></tr>${[0, 1, 2, 3, 4, 5].map(x => `<tr class="${x === c.xun ? 'on' : ''}"><td>${GZ(x * 10)}</td><td>${QIYI[x]}</td><td style="font-size:12.5px;font-weight:400">${[...Array(10)].map((_, k) => x * 10 + k === c.hourIdx ? `<b style="color:#b91c1c">${GZ(x * 10 + k)}</b>` : GZ(x * 10 + k)).join(' ')}</td></tr>`).join('')}</table>`,
+    board: { layers: base, hl: [c.xunPal], tags: tag(c.xunPal, tx(`${xunName} hides in ${c.xunYi}`, `${xunName}遁${c.xunYi}`)) } });
+  const sameStar = c.starShift === 0;
+  S.push({ short: tx('Stars', '九星'), title: tx('The Chief star follows the hour stem → heaven plate', '值符随时干 → 天盘'),
+    story: tx(`Rule: ${T('zfsg')}. The hour stem is ${kw(nS(STEMS[c.hourStem]))}${c.hourStem === 0 ? `, but 甲 is hidden, so use its Yi ${kw(c.xunYi)}` : ''}. On the earth plate it sits in ${nPal(c.tgtPal)}${c.tgtPal === 5 ? `, the centre, which ${T('jikun', 'lodges in 坤 2')}` : ''}. So ${nStar(c.zfStar)} moves from palace ${c.srcR} to <b>palace ${c.tgtR}</b>.`,
+      `规则：${T('zfsg')}。时干是 ${kw(STEMS[c.hourStem])}${c.hourStem === 0 ? `，但甲是藏着的，要用它藏身的 ${kw(c.xunYi)}` : ''}，它在地盘的 ${nPal(c.tgtPal)}${c.tgtPal === 5 ? `，中五${T('jikun', '寄坤二宫')}` : ''}。所以值符 ${c.zfStar} 从 ${c.srcR} 宫转到 <b>${c.tgtR} 宫</b>。`),
+    takeaway: (sameStar
+      ? tx(`The Chief is already there, so no star moves: every star stays home (${T('fuyin', 'Fuyin')}). `, `值符本来就在那里，所以九星都不动，各在本宫（${T('fuyin', '星伏吟')}）。`)
+      : tx(`The stars turn together like a wheel, <b>${c.starShift} place${c.starShift > 1 ? 's' : ''}</b> round the ring (${T('zhuanpan', 'rotating plate')}). `, `九星像轮子一样整圈一起转 <b>${c.starShift} 格</b>（${T('zhuanpan')}）。`))
+      + tx(`Each star carries the earth stem of its home palace; those become the ${T('tianpan', 'heaven plate')} stems (purple, top right). The centre star 天禽 rides with 天芮, so that palace has two heaven stems.`,
+        `每颗星都带着自己本宫的地盘干，成为${T('tianpan')}干（紫色，右上角）。中宫的天禽随天芮走，所以那一宫有两个天盘干。`),
+    work: `<div class="cmp">${tx(`Hour stem ${c.tgtStem} → earth plate palace ${c.tgtPal}${c.tgtPal === 5 ? ' → 2' : ''} · Chief ${c.zfStar}: ${c.srcR} → ${c.tgtR} · turn ${c.starShift}`, `时干 ${c.tgtStem} → 地盘 ${c.tgtPal} 宫${c.tgtPal === 5 ? ' → 寄 2 宫' : ''} · 值符 ${c.zfStar}：${c.srcR} → ${c.tgtR} 宫 · 转 ${c.starShift} 格`)}</div>`
+      + `<table class="t"><tr><th>${tx('Palace', '宫')}</th><th>${tx('Star now', '现在的星')}</th><th>${tx('came from', '来自')}</th><th>${tx('heaven stem', '天盘干')}</th></tr>${RING.map(p => { const hv = c.heaven[p]; return `<tr class="${p === c.tgtR ? 'on' : ''}"><td>${p} ${PAL[p][0]}</td><td>${hv.stars.join(' + ')}</td><td>${hv.from}</td><td><b style="color:var(--c1)">${hv.stems.join(' ')}</b></td></tr>`; }).join('')}</table>`,
+    board: { layers: ['earth', 'heaven'], fresh: 'heaven', hl: [c.tgtR], src: sameStar ? [] : [c.srcR], lines: sameStar ? [] : [[c.srcR, c.tgtR, '#7c3aed']], tags: tag(c.tgtR, tx('Chief star', '值符')) } });
+  const sameDoor = c.doorShift === 0;
+  S.push({ short: tx('Doors', '八门'), title: tx('The Chief door follows the hour branch → doors', '值使随时支 → 八门'),
+    story: tx(`Rule: ${T('zssz')}. The door starts from the xun head’s palace (${xunName} = ${c.xunYi} in palace ${c.xunPal}) and moves one palace per hour, walking the Luoshu numbers ${dir}; the centre counts as a step. From ${xunName} to ${GZ(c.hourIdx)} is <b>${c.steps} step${c.steps === 1 ? '' : 's'}</b>, landing on palace ${c.doorLand}${c.doorLand === 5 ? ` — the centre, which ${T('jikun', 'lodges in 坤 2')}` : ''}.`,
+      `规则：${T('zssz')}。值使从旬首所在宫出发（${xunName}遁${c.xunYi}，在 ${c.xunPal} 宫），每过一个时辰走一宫，按洛书数字${dir}，中五也算一步。从 ${xunName} 到 ${GZ(c.hourIdx)} 共 <b>${c.steps} 步</b>，落在 ${c.doorLand} 宫${c.doorLand === 5 ? `，中五${T('jikun', '寄坤二宫')}` : ''}。`),
+    takeaway: (sameDoor ? tx(`${nDoor(c.zsDoor)} ends up at home, so no door moves (${T('fuyin', 'Fuyin')}). `, `${c.zsDoor}回到本宫，八门都不动（${T('fuyin', '门伏吟')}）。`)
+      : tx(`So ${nDoor(c.zsDoor)} goes to palace ${c.doorPal} and all eight doors turn with it, <b>${c.doorShift} place${c.doorShift > 1 ? 's' : ''}</b> round the ring, keeping the order 休 生 伤 杜 景 死 惊 开. `, `于是 ${c.zsDoor} 到 ${c.doorPal} 宫，八门跟着整圈转 <b>${c.doorShift} 格</b>，次序始终是 休 生 伤 杜 景 死 惊 开。`))
+      + tx('Stars follow the hour <b>stem</b>, doors follow the hour <b>branch</b> (how many hours have passed), so they usually turn by different amounts.', '九星看时<b>干</b>，八门看时<b>支</b>（过了几个时辰），所以星和门转的格数通常不一样。'),
+    work: `<table class="t"><tr><th>${tx('Hour', '时辰')}</th><th>${tx('Door is in palace', '值使到')}</th></tr>${c.doorPath.map((s, k) => `<tr class="${k === c.doorPath.length - 1 ? 'on' : ''}"><td>${GZ(s.i)}${k === 0 ? tx(' (xun head)', '（旬首）') : ''}</td><td>${s.p}${s.p === 5 && k === c.doorPath.length - 1 ? ' → 2' : ''}</td></tr>`).join('')}</table>`,
+    board: { layers: ['earth', 'heaven', 'door'], fresh: 'door', hl: [c.doorPal], lines: c.doorPath.slice(1).map((s, k) => [c.doorPath[k].p, s.p, '#d97706', k * 0.3]), tags: tag(c.doorPal, tx('Chief door', '值使')) } });
+  S.push({ short: tx('Spirits', '八神'), title: tx('Lay the eight spirits', '排八神'),
+    story: tx(`The last layer is the ${T('bashen', 'eight spirits')}. The spirit 值符 sits with the Chief star, in palace ${c.tgtR}. The rest follow in the order 值符 腾蛇 太阴 六合 白虎 玄武 九地 九天, going round the ring ${c.yang ? 'clockwise (Yang Dun)' : 'anticlockwise (Yin Dun)'}.`,
+      `最后一层是${T('bashen')}。神里的“值符”跟着值符星，放在 ${c.tgtR} 宫。其余按 值符、腾蛇、太阴、六合、白虎、玄武、九地、九天 的顺序，${c.yang ? '阳遁顺时针' : '阴遁逆时针'}绕外圈排满。`),
+    takeaway: tx('The chart is complete. Each outer palace now holds five things: spirit, star, door, heaven stem and earth stem.', '到这里一张盘就齐了：每个外宫都有 神、星、门、天盘干、地盘干 五样。'),
+    work: `<table class="t"><tr><th>#</th><th>${tx('Spirit', '八神')}</th><th>${tx('Palace', '宫')}</th></tr>${c.godOrder.map(([g, p], k) => `<tr><td>${k + 1}</td><td><b style="color:var(--c4)">${nGod(g)}</b></td><td>${nPal(p)}</td></tr>`).join('')}</table>`,
+    board: { layers: ['earth', 'heaven', 'door', 'god'], fresh: 'god', hl: [c.tgtR] } });
+  S.push({ short: tx('Marks', '标记'), title: tx('Void and Horse → the finished chart', '空亡、驿马 → 完成'),
+    story: tx(`Chart tools add two marks. ${T('kongwang', 'Void')}: the ${xunName} xun leaves out ${BRANCHES[c.kong[0]]}${BRANCHES[c.kong[1]]}, which live in palace ${c.kongPals.join(' and ')}. ${T('maxing', 'Horse')}: in a ${BRANCHES[c.hb]} hour the horse is ${BRANCHES[c.ma]}, in palace ${c.maPal}.`,
+      `排盘工具还会标两个记号。${T('kongwang')}：${xunName}旬空${BRANCHES[c.kong[0]]}${BRANCHES[c.kong[1]]}，落在 ${c.kongPals.join('、')} 宫。${T('maxing')}：${BRANCHES[c.hb]}时马在${BRANCHES[c.ma]}，落在 ${c.maPal} 宫。`),
+    takeaway: tx(`In one line: <b>${dun}; Chief star ${c.zfStar} in palace ${c.tgtR}; Chief door ${c.zsDoor} in palace ${c.doorPal}</b>. That is everything an online tool works out in a blink. Reading the palaces is another lesson.`,
+      `一句话：<b>${dun}，值符${c.zfStar}落${c.tgtR}宫，值使${c.zsDoor}落${c.doorPal}宫</b>。网上工具一瞬间算出的，就是这些。至于每一宫怎么解读，是另一门功课了。`),
+    work: `<table class="t">${[
+      [tx('Moment', '时间'), fmt(c.ms)], [tx('Four pillars', '四柱'), [c.yearIdx, c.monthIdx, c.dayIdx, c.hourIdx].map(GZ).join(' ')],
+      [tx('Solar term', '节气'), `${TERMS[c.termK]} · ${L(YUAN[c.yuan])}`], [tx('Ju', '局'), dun],
+      [tx('Xun head', '旬首'), `${xunName} → ${c.xunYi}`], [tx('Chief star', '值符'), `${c.zfStar} → ${c.tgtR}`], [tx('Chief door', '值使'), `${c.zsDoor} → ${c.doorPal}`],
+      [tx('Void', '空亡'), `${BRANCHES[c.kong[0]]}${BRANCHES[c.kong[1]]} (${c.kongPals.join(', ')})`], [tx('Horse', '驿马'), `${BRANCHES[c.ma]} (${c.maPal})`]].map(([a, b]) => `<tr><td>${a}</td><td><b>${b}</b></td></tr>`).join('')}</table>`,
+    board: { layers: ['earth', 'heaven', 'door', 'god', 'marks'], fresh: 'marks' } });
+  return S;
+}
+function wrapHtml() {
+  const ck = items => items.map(([ok, t]) => `<p><span class="${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✗'}</span>${t}</p>`).join('');
+  return ck([
+    [1, tx('Time → four pillars. Only the day and hour pillars, plus the solar term, drive an hour chart.', '时间 → 四柱。时家奇门真正用到的是日柱、时柱和节气。')],
+    [1, tx('Solar term → Yang or Yin; futou → yuan; term + yuan → ju (a table lookup).', '节气 → 阴阳遁；符头 → 三元；节气 + 元 → 局（查表）。')],
+    [1, tx('Ju → where 戊 goes; the nine stems walk the Luoshu numbers to make the earth plate.', '局 → 戊在哪宫；九个干沿洛书数字排出地盘。')],
+    [1, tx('Hour → xun head → Chief star and door. The star follows the hour stem; the door follows the hour branch; spirits start at the Chief star.', '时辰 → 旬首 → 值符、值使。值符随时干，值使随时支，八神从值符起。')],
+    [0, tx('Myth: every tool gives the same chart. Schools differ: Chaibu vs Zhirun near a term change, rotating vs flying plate, where the day turns (23:00 or 0:00), clock vs true solar time.', '误解：所有排盘工具结果都一样。流派有差异：交节前后拆补和置闰不同，转盘和飞盘不同，换日在 23 点还是 0 点，用钟表时间还是真太阳时。')],
+  ]) + `<div class="tip-box">${tx('Press “Lock now” at the top to cast the current moment again, or pick another time — try one in summer to see Yin Dun walk backwards.', '按顶部的“重新锁定此刻”再排一次，或者换个时间——选一个夏天的时间，看看阴遁是怎么倒着走的。')}</div>`;
+}
+
+// ---------- the step engine ----------
+let chart = null, steps = [], cur = 0;
+const last = () => steps.length + 1;   // 0 = start, last = wrap-up
+const $ = s => document.querySelector(s);
+function storyHtml() {
+  if (cur === 0) return `<div class="n">${tx('Starting point', '起点')}</div><h2>${tx('A moment, frozen', '定格的一刻')}</h2><p>${tx(`The moment <b>${fmt(chart.ms, true)}</b> is locked. Everything below is worked out from this one instant, in the same order a practitioner would do it by hand.`, `<b>${fmt(chart.ms, true)}</b> 这一刻已锁定。下面的每一步都只从这一个时刻出发，按照手工排盘的顺序推出来。`)}</p><div class="tip-box">💡 ${tx(`Conventions used: ${T('zhuanpan', 'rotating plate')}, ${T('chaibu', 'Chaibu method')}, your device clock, day turns at 23:00. Press <b>Next</b>.`, `本页采用：${T('zhuanpan')}、${T('chaibu')}、设备钟表时间、23 点换日。按<b>下一步</b>开始。`)}</div>`;
+  if (cur === last()) return `<div class="n">${tx('Wrap-up', '总结')}</div><h2>${tx('The whole method in five lines', '五句话讲完排盘')}</h2>${wrapHtml()}`;
+  const st = steps[cur - 1];
+  return `<div class="n">${tx(`Step ${cur} of ${steps.length}`, `第 ${cur} 步，共 ${steps.length} 步`)}</div><h2>${st.title}</h2><p>${st.story}</p><div class="tip-box">💡 ${st.takeaway}</div>`;
+}
+function go(i) {
+  cur = Math.max(0, Math.min(last(), i)); hideTip();
+  $('#story').innerHTML = storyHtml();
+  const st = cur === 0 ? { work: `<span class="none">${tx('Press Next to begin.', '按“下一步”开始。')}</span>`, board: { layers: [] } }
+    : cur === last() ? { work: steps[steps.length - 1].work, board: { layers: ['earth', 'heaven', 'door', 'god', 'marks'] } } : steps[cur - 1];
+  $('#board').innerHTML = boardHtml(chart, st.board);
+  $('#work').innerHTML = st.work;
+  $('#dots').innerHTML = Array.from({ length: last() + 1 }, (_, k) => `<button type="button" class="dot${k < cur ? ' done' : k === cur ? ' cur' : ''}" data-step="${k}" title="${k === 0 ? tx('Start', '开始') : k === last() ? tx('Wrap-up', '总结') : esc(steps[k - 1].short)}"></button>`).join('');
+  $('#pos').textContent = cur === 0 ? tx('Start', '开始') : cur === last() ? tx('Wrap-up', '总结') : `${cur} / ${steps.length}`;
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === last();
+  $('#next').textContent = cur === 0 ? tx('Start →', '开始 →') : cur === last() ? tx('Done ✓', '完成 ✓') : tx('Next →', '下一步 →');
+  const u = new URL(location.href); u.searchParams.set('step', cur); history.replaceState(null, '', u);
+  const r = $('#story').getBoundingClientRect();
+  if (r.top < 0 || r.top > innerHeight * 0.6) window.scrollTo({ top: $('#story').offsetTop - 8, behavior: 'smooth' });
+}
+function localStamp(ms) { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+function parseStamp(s) {
+  const m = /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)(?::(\d\d))?$/.exec(s || '');
+  return m ? new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)).getTime() : NaN;
+}
+function lock(ms, step) {
+  chart = cast(ms); steps = buildSteps(chart);
+  $('#startView').hidden = true; $('#lessonView').hidden = false;
+  const u = new URL(location.href); u.searchParams.set('t', localStamp(ms)); history.replaceState(null, '', u);
+  renderLocked(); go(step || 0);
+}
+function renderLocked() {
+  $('#locked').innerHTML = `🔒 <span>${tx('Locked at', '锁定于')} <b>${fmt(chart.ms, true)}</b> · ${nDun(chart.yang, chart.ju)}</span><span class="sp"></span>`
+    + `<button class="btn" id="relock">${tx('Lock now', '重新锁定此刻')}</button><input type="datetime-local" id="pickT2" value="${localStamp(chart.ms).slice(0, 16)}"><button class="btn" id="pickBtn2">${tx('Use it', '用这个时间')}</button>`;
+  $('#relock').onclick = () => lock(Date.now(), 1);
+  $('#pickBtn2').onclick = () => { const t = parseStamp($('#pickT2').value); if (!isNaN(t)) lock(t, 1); };
+}
+function applyLang() {
+  document.documentElement.lang = isZh() ? 'zh-Hans' : 'en';
+  document.title = tx('How a Qimen Dunjia chart is cast', '奇门遁甲是怎么排盘的');
+  document.querySelectorAll('[data-t]').forEach(el => { el.innerHTML = U(el.dataset.t); });
+  $('#lang').value = LANG;
+  if (chart) { steps = buildSteps(chart); renderLocked(); go(cur); }
+}
+function tick() { if (!$('#startView').hidden) { const n = Date.now(); $('#clock').innerHTML = `${fmt(n, true).slice(11)}<small>${fmt(n).slice(0, 10)} · ${tzStr(-new Date(n).getTimezoneOffset())}</small>`; } }
+function showTip(el) {
+  const [h, d] = G()[el.dataset.term], tip = $('#tip'), host = el.closest('dialog') || document.body;
+  if (tip.parentNode !== host) host.appendChild(tip);
+  tip.innerHTML = `<span class="x" role="button" aria-label="close">✕</span><b>${h}</b>${d}`;
+  tip.hidden = false;
+  const r = el.getBoundingClientRect(), base = host === document.body ? { left: -scrollX, top: -scrollY, width: innerWidth } : host.getBoundingClientRect();
+  tip.style.maxWidth = Math.min(340, base.width - 16) + 'px';
+  const x = Math.max(8, Math.min(r.left - base.left, base.width - tip.offsetWidth - 8));
+  tip.style.left = x + 'px'; tip.style.top = (r.bottom - base.top + 8) + 'px';
+  tip.style.setProperty('--ax', Math.max(8, Math.min(tip.offsetWidth - 20, r.left - base.left - x + Math.min(r.width / 2, 30) - 6)) + 'px');
+}
+function hideTip() { const t = HAS_DOM && $('#tip'); if (t) t.hidden = true; }
+function init() {
+  applyLang();
+  $('#pickT').value = localStamp(Date.now()).slice(0, 16);
+  tick(); setInterval(tick, 250);
+  $('#goBtn').onclick = () => lock(Date.now(), 0);
+  $('#pickBtn').onclick = () => { const t = parseStamp($('#pickT').value); if (!isNaN(t)) lock(t, 0); };
+  $('#prev').onclick = () => go(cur - 1);
+  $('#next').onclick = () => go(cur + 1);
+  $('#dots').onclick = e => { const b = e.target.closest('[data-step]'); if (b) go(+b.dataset.step); };
+  $('#lang').onchange = e => {
+    LANG = e.target.value;
+    try { localStorage.setItem('learn-lang', LANG); } catch (_) {}
+    const u = new URL(location.href); u.searchParams.set('lang', LANG); history.replaceState(null, '', u);
+    applyLang();
+  };
+  $('#howBtn').onclick = () => $('#howDlg').showModal();
+  document.addEventListener('click', e => {
+    const t = e.target.closest('.term');
+    if (t) { showTip(t); return; }
+    if (!e.target.closest('#tip') || e.target.closest('.x')) hideTip();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') hideTip();
+    if (!chart || (e.target.closest && e.target.closest('input, select, textarea, dialog[open]'))) return;
+    if (e.key === 'ArrowRight') go(cur + 1);
+    else if (e.key === 'ArrowLeft') go(cur - 1);
+    else if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('term')) showTip(e.target);
+  });
+  // A shared link (?t=…) opens straight on that moment.
+  const p = new URLSearchParams(location.search), t = parseStamp(p.get('t'));
+  if (!isNaN(t)) lock(t, +p.get('step') || 0);
+  let seen = null;
+  try { seen = localStorage.getItem('qm-seen-how'); localStorage.setItem('qm-seen-how', '1'); } catch (_) {}
+  if (!seen) $('#howDlg').showModal();
+}
+
+if (typeof module !== 'undefined') module.exports = { cast, buildSteps, boardHtml, wrapHtml, sunLon, findCross, GZ, GLOSS, setLang: l => { LANG = l; } };
+else init();
+</script>
+</body>
+</html>

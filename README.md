@@ -9,6 +9,7 @@ Interactive, bilingual (English / 简体中文) lessons that teach by stepping t
 |---|---|
 | Household money → the three financial statements / 家庭收支 → 三张财务报表 | [English](https://vennahlot.github.io/learn/household-finance/?lang=en) · [中文](https://vennahlot.github.io/learn/household-finance/?lang=zh) |
 | How search works: the inverted index / 搜索是怎么工作的：倒排索引 | [English](https://vennahlot.github.io/learn/inverted-index/?lang=en) · [中文](https://vennahlot.github.io/learn/inverted-index/?lang=zh) |
+| How a Qimen Dunjia chart is cast / 奇门遁甲是怎么排盘的 | [English](https://vennahlot.github.io/learn/qimen-dunjia/?lang=en) · [中文](https://vennahlot.github.io/learn/qimen-dunjia/?lang=zh) |
 
 ## How it is built
 
