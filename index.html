@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Learn: interactive lessons</title>
+<meta name="description" content="Interactive, bilingual (English / 简体中文) lessons that teach by stepping through an example.">
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1f2633;--mute:#6b7280;--line:#e5e7eb;--acc:#2563eb}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink)}
+header{max-width:860px;margin:0 auto;padding:28px 20px 8px;display:flex;align-items:flex-start;gap:12px}
+header div{flex:1}
+h1{margin:0;font-size:28px}
+.sub{color:var(--mute);margin:6px 0 0}
+select{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+main{max-width:860px;margin:0 auto;padding:16px 20px 48px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+a.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;color:inherit;text-decoration:none;transition:box-shadow .15s,border-color .15s}
+a.card:hover{border-color:#c7cbd3;box-shadow:0 6px 18px rgba(0,0,0,.07)}
+.bars{display:flex;gap:4px;margin-bottom:12px}.bars i{height:6px;flex:1;border-radius:3px}
+.card h2{margin:0 0 6px;font-size:19px}
+.card p{margin:0 0 12px;color:#374151}
+.go{color:var(--acc);font-weight:600}
+.soon{border-style:dashed;color:var(--mute);background:transparent}
+footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 32px}
+footer a{color:inherit}
+@media (max-width:600px){header{padding:20px 14px 4px;flex-wrap:wrap}h1{font-size:24px}main{padding:12px 14px 40px}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1 data-t="h1"></h1><p class="sub" data-t="sub"></p></div>
+  <select id="lang" aria-label="Language / 语言"><option value="en">🌐 English</option><option value="zh">🌐 简体中文</option></select>
+</header>
+<main id="list"></main>
+<footer data-t="foot"></footer>
+<script>
+'use strict';
+// One entry per lesson: folder name, colors for the card, and text in both languages.
+const LESSONS = [
+  { dir: 'household-finance', colors: ['#7c3aed', '#0d9488', '#d97706'],
+    en: ['Household money → the three financial statements', 'Follow a family of two through paychecks, a mortgage, a car loan, credit cards and the stock market, and watch each event land in the income statement, cash flow statement and balance sheet.'],
+    zh: ['家庭收支 → 三张财务报表', '跟着一个两口之家经历发薪、还房贷、车贷、刷信用卡和股市涨跌，看每一笔钱如何进入利润表、现金流量表和资产负债表。'] },
+];
+const UI = {
+  en: { title: 'Learn: interactive lessons', h1: 'Learn', sub: 'Small interactive lessons. Each one walks through an example step by step; press Next and watch what changes.', open: 'Start →', soon: 'More lessons coming.', foot: 'By <a href="https://vennahlot.github.io/">Yichen Wang</a> · <a href="https://github.com/vennahlot/learn">source</a>' },
+  zh: { title: '学一学：交互式小课程', h1: '学一学', sub: '交互式小课程。每一课用一个例子一步一步讲；按“下一步”，看看什么变了。', open: '开始 →', soon: '更多课程即将推出。', foot: '作者 <a href="https://vennahlot.github.io/">Yichen Wang</a> · <a href="https://github.com/vennahlot/learn">源代码</a>' },
+};
+const LANGS = ['en', 'zh'];
+function pickLang() {
+  const q = (new URLSearchParams(location.search).get('lang') || '').slice(0, 2).toLowerCase();
+  if (LANGS.includes(q)) return q;
+  const saved = localStorage.getItem('learn-lang');
+  if (LANGS.includes(saved)) return saved;
+  return /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
+}
+function render(lang) {
+  const u = UI[lang];
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.title = u.title;
+  document.querySelectorAll('[data-t]').forEach(el => el.innerHTML = u[el.dataset.t]);
+  document.getElementById('lang').value = lang;
+  document.getElementById('list').innerHTML = LESSONS.map(l => `<a class="card" href="${l.dir}/?lang=${lang}">
+      <div class="bars">${l.colors.map(c => `<i style="background:${c}"></i>`).join('')}</div>
+      <h2>${l[lang][0]}</h2><p>${l[lang][1]}</p><span class="go">${u.open}</span></a>`).join('')
+    + `<div class="card soon">${u.soon}</div>`;
+}
+document.getElementById('lang').onchange = e => {
+  const lang = e.target.value;
+  localStorage.setItem('learn-lang', lang);
+  const url = new URL(location.href); url.searchParams.set('lang', lang); history.replaceState(null, '', url);
+  render(lang);
+};
+render(pickLang());
+</script>
+</body>
+</html>

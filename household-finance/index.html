@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>How household money flows through the three financial statements</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1f2633;--mute:#6b7280;--line:#e5e7eb;--acc:#2563eb;--hl:#fff4c2;--up:#15803d;--down:#b91c1c;--is:#7c3aed;--cf:#0d9488;--bs:#d97706}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink)}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 24px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top h1{font-size:18px;margin:0 auto 0 0}
+select,button{font:inherit}
+select{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;min-width:260px}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer}
+.btn:hover{border-color:#c7cbd3}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+main{max-width:1180px;margin:0 auto;padding:18px 24px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.stepper{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.dots{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+.dot{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:12px;cursor:pointer;color:var(--mute);padding:0}
+.dot.done{background:#dbeafe;border-color:#bfdbfe;color:var(--acc)}
+.dot.cur{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700}
+.kbd{font-size:12px;color:var(--mute)}
+.story .n{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+.story h2{margin:2px 0 6px;font-size:21px}
+.story p{margin:6px 0;max-width:820px}
+.tip-box{margin-top:10px;background:#f0f7ff;border-radius:8px;padding:8px 12px;max-width:820px}
+.down{text-align:center;color:var(--mute);font-size:13px;margin:8px 0}
+.down b{display:block;font-size:20px;line-height:1;color:#9ca3af}
+.sec-title{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin:0 0 8px;font-weight:600}
+table{width:100%;border-collapse:collapse}
+.ledger td,.ledger th{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+.ledger th{font-size:12px;color:var(--mute);font-weight:600}
+.ledger tr.cur td{background:var(--hl)}
+.ledger tr.cur{animation:fadein .5s ease}
+.ledger tr.old td{color:var(--mute)}
+.ledger tr.old .chip{opacity:.65}
+.chip{display:inline-block;border-radius:6px;padding:1px 7px;margin:2px 4px 2px 0;font-size:12.5px;white-space:nowrap;background:#f3f4f6}
+.chip.bs{background:#fef3e2}.chip.is{background:#f1ebfe}.chip.cf{background:#e0f5f2}
+.none{color:#9ca3af;font-size:12.5px}
+.stmts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:980px){.stmts{grid-template-columns:1fr}}
+.stmt h3{margin:0;font-size:16px;display:flex;align-items:center;gap:8px}
+.stmt h3 i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.stmt .q{font-size:12.5px;color:var(--mute);margin:2px 0 8px}
+.stmt td{padding:3px 2px;font-size:14px}
+.stmt td.v{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.stmt tr.h td{font-weight:700;padding-top:10px}
+.stmt tr.gap td{height:6px;padding:0}
+.stmt .note{font-weight:400;font-size:11.5px;color:var(--mute)}
+.stmt tr.t td{font-weight:600}
+.stmt tr.t td.v{border-top:1px solid var(--ink)}
+.stmt tr.g td{font-weight:700}
+.stmt tr.g td.v{border-top:1px solid var(--ink);border-bottom:3px double var(--ink)}
+.stmt tr.hit td{background:var(--hl);animation:flash 1.2s ease .35s both}
+.stmt td.l{padding-left:10px}
+.d{font-size:11.5px;font-weight:700;margin-left:4px;white-space:nowrap;display:inline-block;animation:pop .5s ease .35s both}
+.d.up{color:var(--up)}.d.dn{color:var(--down)}
+.stmt .empty{color:#9ca3af;font-size:13px;font-style:italic;padding-left:10px}
+.ties div{margin:6px 0}
+.ok{color:var(--up);font-weight:800;margin-right:6px}
+.bad{color:var(--down);font-weight:800;margin-right:6px}
+@keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
+@keyframes flash{0%{background:#ffe27a}100%{background:var(--hl)}}
+@keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1}}
+.term{border-bottom:1.5px dotted #6b7280;cursor:help}
+.term:hover{color:var(--acc);border-bottom-color:var(--acc)}
+#tip{position:absolute;z-index:50;max-width:340px;background:#1f2633;color:#fff;border-radius:10px;padding:10px 26px 10px 14px;font-size:13.5px;line-height:1.45;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#tip b{display:block;margin-bottom:3px;font-size:14px}
+#tip::before{content:"";position:absolute;top:-6px;left:var(--ax,20px);border:6px solid transparent;border-top:0;border-bottom-color:#1f2633}
+#tip .x{position:absolute;right:9px;top:5px;cursor:pointer;opacity:.7}
+dialog{border:none;border-radius:14px;padding:0;width:min(560px,92vw);box-shadow:0 20px 50px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(15,23,42,.45)}
+.dlg-h{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:16px}
+.dlg-b{padding:14px 18px;max-height:65vh;overflow:auto}
+.dlg-f{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.form{display:grid;grid-template-columns:1fr 130px;gap:6px 12px;align-items:center}
+.form h4{grid-column:1/3;margin:10px 0 0;font-size:12px;text-transform:uppercase;color:var(--mute);letter-spacing:.05em}
+.form input{padding:5px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;text-align:right;width:100%}
+.how p{margin:8px 0}
+.legend{display:flex;gap:10px;margin:10px 0}
+.legend div{flex:1;border-radius:10px;padding:10px;color:#fff;font-size:13px}
+select.lang{min-width:0}
+.pos,.stabs{display:none}
+/* ---------- phones ---------- */
+@media (max-width:700px){
+  body{font-size:16px}
+  .top{position:static;padding:10px 12px;gap:8px}
+  .top h1{font-size:16px;flex:1 1 0;min-width:0;margin:0}
+  select.lang{order:1;padding:6px}
+  .top label{order:2;flex:1 1 100%;display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .top label select{flex:1;min-width:0}
+  .top .btn{order:3;flex:1 1 0;padding:8px 4px;font-size:14px;line-height:1.25}
+  select,.form input{font-size:16px}
+  main{padding:12px 10px calc(90px + env(safe-area-inset-bottom))}
+  .card{padding:14px}
+  .stepper{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.07);padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+  .stepper .btn{flex:1;padding:13px 8px;font-size:17px;border-radius:10px}
+  .dots,.stepper .kbd{display:none}
+  .pos{display:block;font-size:14px;color:var(--mute);white-space:nowrap;text-align:center}
+  .story h2{font-size:20px}
+  .tip-box{padding:10px 12px}
+  .ledger,.ledger tbody,.ledger tr,.ledger td{display:block}
+  .ledger tr.hd{display:none}
+  .ledger tr{border-bottom:1px solid var(--line);padding:8px 6px}
+  .ledger tr:last-child{border-bottom:0}
+  .ledger td{border:0;padding:2px 0}
+  .ledger td:nth-child(-n+2){display:inline;font-weight:600}
+  .ledger td:first-child{color:var(--mute);margin-right:6px}
+  .ledger td[data-label]::before{content:attr(data-label);display:block;font-size:12px;color:var(--mute);margin-top:4px}
+  .ledger tr.cur{background:var(--hl);border-radius:8px}
+  .ledger tr.cur td{background:none}
+  .ledger tr.old{cursor:pointer}
+  .ledger tr.old td:nth-child(2)::after{content:" ▸";color:#9ca3af;font-weight:400}
+  .ledger tr.old.open td:nth-child(2)::after{content:" ▾"}
+  .ledger tr.old td[data-label]{display:none}
+  .ledger tr.old.open td[data-label]{display:block}
+  .chip{font-size:13.5px;white-space:normal}
+  .stabs{display:flex;gap:6px;margin-bottom:10px}
+  .stabs button{flex:1 1 0;font:inherit;font-size:14px;line-height:1.25;padding:9px 4px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--mute);border-top:4px solid var(--c);position:relative}
+  .stabs button.on{color:var(--ink);font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  .stabs .hitdot{position:absolute;top:-7px;right:-3px;width:12px;height:12px;border-radius:50%;background:#facc15;border:2px solid #fff}
+  .stmts{display:block}
+  .stmts .stmt{display:none}
+  .stmts .stmt.on{display:block}
+  .stmt td{font-size:15px}
+  .stmt .q{font-size:13px}
+  .legend{flex-direction:column}
+  #tip{font-size:15px}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1 data-t="h1">Household money → the three financial statements</h1>
+  <label><span data-t="scenario">Scenario:</span> <select id="scen"></select></label>
+  <button class="btn" id="numsBtn" data-t="nums">Change numbers</button>
+  <button class="btn" id="houseBtn" data-t="house">⚙ Household</button>
+  <button class="btn" id="howBtn" data-t="how">? How to read this</button>
+  <select id="lang" class="lang" aria-label="Language / 语言"><option value="en">🌐 English</option><option value="zh">🌐 简体中文</option></select>
+</div>
+<main>
+  <div class="stepper">
+    <button class="btn" id="prev" data-t="prev">← Back</button>
+    <div class="dots" id="dots"></div>
+    <span class="kbd" data-t="keys">← → keys work too</span>
+    <span class="pos" id="pos"></span>
+    <button class="btn primary" id="next">Next →</button>
+  </div>
+  <div class="card story" id="story"></div>
+  <div class="down"><b>↓</b><span data-t="recorded"></span></div>
+  <div class="card"><div class="sec-title" data-t="ledgerTitle">Ledger</div><div id="ledger"></div></div>
+  <div class="down"><b>↓</b><span data-t="added">added up into the statements</span></div>
+  <div class="stmts" id="stmts"></div>
+</main>
+
+<div id="tip" hidden></div>
+
+<dialog id="houseDlg"><form method="dialog">
+  <div class="dlg-h" data-t="houseTitle">Household: Alex &amp; Sam</div>
+  <div class="dlg-b"><p class="kbd" style="margin-top:0" data-t="houseIntro">Where the household starts. Every scenario begins from here.</p><div class="form" id="houseForm"></div></div>
+  <div class="dlg-f"><button class="btn" value="reset" data-t="reset">Reset</button><button class="btn" value="cancel" data-t="cancel">Cancel</button><button class="btn primary" value="ok" data-t="apply">Apply</button></div>
+</form></dialog>
+
+<dialog id="numsDlg"><form method="dialog">
+  <div class="dlg-h" id="numsTitle">Scenario numbers</div>
+  <div class="dlg-b"><div class="form" id="numsForm"></div></div>
+  <div class="dlg-f"><button class="btn" value="cancel" data-t="cancel">Cancel</button><button class="btn primary" value="ok" data-t="apply">Apply</button></div>
+</form></dialog>
+
+<dialog id="howDlg"><form method="dialog">
+  <div class="dlg-h" data-t="howTitle">How to read this page</div>
+  <div class="dlg-b how" data-t="howBody"></div>
+  <div class="dlg-f"><button class="btn primary" value="ok" data-t="gotIt">Got it</button></div>
+</form></dialog>
+
+<script>
+// Household money -> ledger -> three statements. Plain JS, no build step.
+// Two languages: English and Simplified Chinese, chosen with ?lang=en|zh.
+'use strict';
+
+// ---------- language ----------
+const LANGS = ['en', 'zh'];
+function pickLang() {
+  const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('lang') : null;
+  if (q && LANGS.includes(q.slice(0, 2).toLowerCase())) return q.slice(0, 2).toLowerCase();
+  const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('learn-lang') : null;
+  if (LANGS.includes(saved)) return saved;
+  return typeof navigator !== 'undefined' && /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
+}
+let LANG = pickLang();
+const tx = (en, zh) => LANG === 'zh' ? zh : en;   // inline text in both languages
+const L = pair => Array.isArray(pair) ? (LANG === 'zh' ? pair[1] : pair[0]) : pair;   // a [en, zh] label
+
+// Fixed page text. A function value gets the term helper and returns HTML.
+const UI = {
+  en: {
+    title: 'How household money flows through the three financial statements',
+    h1: 'Household money → the three financial statements', scenario: 'Scenario:', nums: 'Change numbers', house: '⚙ Household', how: '? How to read this',
+    prev: '← Back', next: 'Next →', wrapBtn: 'Wrap-up →', keys: '← → keys work too',
+    recorded: () => `recorded in the ${T('ledger')}`, ledgerTitle: 'Ledger', added: 'added up into the statements',
+    houseTitle: 'Household: Alex &amp; Sam', houseIntro: 'Where the household starts. Every scenario begins from here.',
+    reset: 'Reset', cancel: 'Cancel', apply: 'Apply', gotIt: 'Got it', howTitle: 'How to read this page', numbers: n => `${n}: numbers`,
+    howBody: () => `<p>Pick a scenario, then press <b>Next</b>. Each step is one money event, for example a paycheck or a mortgage payment.</p>
+    <p><b>1. The event</b> explains what happened in plain words.<br><b>2. The ledger</b> records it as one line: which accounts went up or down, and which statement lines it touches.<br><b>3. The statements</b> are the ledger added up. The lines that just changed are highlighted in yellow.</p>
+    <div class="legend">
+      <div style="background:var(--is)"><b>Income statement</b><br>Earned − spent over a period. Did we live within our means?</div>
+      <div style="background:var(--cf)"><b>Cash flow</b><br>Every dollar in and out of the bank, sorted into 3 buckets.</div>
+      <div style="background:var(--bs)"><b>Balance sheet</b><br>A snapshot: what we own, what we owe, the difference.</div>
+    </div>
+    <p>Words with a <span class="term" data-term="dotted">dotted underline</span> have an explanation: click them.</p>`,
+  },
+  zh: {
+    title: '家庭的钱如何流入三张财务报表',
+    h1: '家庭收支 → 三张财务报表', scenario: '场景：', nums: '修改数字', house: '⚙ 家庭情况', how: '? 怎么看这个页面',
+    prev: '← 上一步', next: '下一步 →', wrapBtn: '总结 →', keys: '也可以用 ← → 键',
+    recorded: () => `记入${T('ledger')}`, ledgerTitle: '流水账', added: '加总成三张报表',
+    houseTitle: '家庭：Alex 和 Sam', houseIntro: '家庭的起始状况。每个场景都从这里开始。',
+    reset: '重置', cancel: '取消', apply: '应用', gotIt: '知道了', howTitle: '怎么看这个页面', numbers: n => `${n}：数字`,
+    howBody: () => `<p>选一个场景，然后按<b>下一步</b>。每一步是一笔资金事件，比如一次发薪或一次房贷还款。</p>
+    <p><b>1. 事件</b>用大白话说明发生了什么。<br><b>2. 流水账</b>把它记成一行：哪些账户增加或减少，影响了哪些报表项目。<br><b>3. 报表</b>就是流水账的加总。刚刚变化的行用黄色标出。</p>
+    <div class="legend">
+      <div style="background:var(--is)"><b>利润表</b><br>一段时期内挣的减去花的。我们量入为出了吗？</div>
+      <div style="background:var(--cf)"><b>现金流量表</b><br>进出银行的每一块钱，分成 3 类。</div>
+      <div style="background:var(--bs)"><b>资产负债表</b><br>一张快照：拥有什么、欠什么、两者之差。</div>
+    </div>
+    <p>带<span class="term" data-term="dotted">点状下划线</span>的词有解释：点击即可查看。</p>`,
+  },
+};
+const U = k => UI[LANG][k];
+
+// ---------- glossary (TurboTax-style terms) ----------
+const GLOSS = {
+  en: {
+    dotted: ['Like this', 'Click any underlined word to see what it means. Click elsewhere or press Esc to close.'],
+    ledger: ['Ledger', 'The list of every money event, in order. Each line says which accounts went up or down. The three statements are just this list added up in three different ways.'],
+    'income-statement': ['Income statement', 'Money earned minus money spent over a period (a month, a year). Companies call it the P&L. For a household it answers: did we live within our means?'],
+    'cash-flow': ['Cash flow statement', 'Every dollar that went into or out of the bank account over a period, sorted into three buckets: operating, investing and financing.'],
+    'balance-sheet': ['Balance sheet', 'A snapshot on one day: everything you own (assets), everything you owe (liabilities), and the difference (net worth).'],
+    asset: ['Asset', 'Something you own that has money value: cash, investments, a house, a car.'],
+    liability: ['Liability', 'Money you owe: a mortgage, a car loan, a credit card balance.'],
+    'net-worth': ['Net worth', 'Assets minus liabilities: what would be left if you sold everything and paid every debt. Companies call it equity.'],
+    income: ['Income', 'Money earned that makes you richer: salary, bonus, interest, an employer\'s 401(k) match.'],
+    expense: ['Expense', 'Money used up that makes you poorer: taxes, interest, groceries, a car losing value. Paying back a loan\'s principal is NOT an expense.'],
+    'net-income': ['Net income', 'Income minus expenses. For a household it is your true savings for the period. It is the bottom line of the income statement.'],
+    comprehensive: ['Comprehensive income', 'Net income plus other comprehensive income (market value changes). For a household it equals the change in net worth over the period.'],
+    'market-change': ['Market value change', 'Your stocks or house went up or down in price. Net worth changes, but nothing was earned or spent and no cash moved, so it is kept below net income. Companies report it as other comprehensive income (OCI).'],
+    operating: ['Operating cash flow', 'Cash from day-to-day living: paychecks in; taxes, bills, groceries and interest out.'],
+    investing: ['Investing cash flow', 'Cash used to buy (or received from selling) things you keep: a car, a home improvement, stocks, 401(k) contributions.'],
+    financing: ['Financing cash flow', 'Cash borrowed or repaid: a new loan comes in, loan principal goes out. Interest is not here; it is an operating expense.'],
+    'gross-pay': ['Gross pay', 'Your salary before anything is taken out. The paycheck you see (net pay) is smaller.'],
+    withholding: ['Withholding', 'Income tax, Social Security and Medicare your employer takes out of each paycheck and sends to the government for you. (Simplified here as one flat rate.)'],
+    'pre-tax': ['Pre-tax 401(k)', 'Money put into the 401(k) before income tax is calculated, so you pay less tax now and pay it when you withdraw in retirement.'],
+    match: ['Employer match', 'Your employer adds money to your 401(k), often 50 cents per dollar you put in, up to a limit. It is real income, but it never passes through your bank account.'],
+    principal: ['Principal', 'The part of a loan payment that pays back the money you borrowed. It shrinks the loan, so it is not an expense.'],
+    interest: ['Interest', 'The price of borrowing money. It is an expense: you get nothing back for it.'],
+    accrual: ['Accrual', 'An expense counts when it happens (you swipe the card), not when the cash leaves (you pay the bill). That is why net income and cash flow can differ.'],
+    depreciation: ['Depreciation', 'A thing you own (like a car) losing value as it ages. It is a real cost, so it is an expense, but no cash leaves.'],
+    'non-cash': ['Non-cash item', 'Something that changes net income or net worth without any money moving in or out of the bank: depreciation, an employer match, market price changes.'],
+    'book-value': ['Book value', 'What the car is worth on your own balance sheet: what you paid minus the depreciation recorded so far.'],
+    capex: ['Capital expense', 'Money spent on something that lasts and adds value (a new kitchen, a car). It becomes an asset, not an expense. Repairs that just fix what was there are expenses.'],
+    'cost-basis': ['Cost basis', 'What you originally paid for an investment. Selling above it is a gain; the gain is what gets taxed.'],
+    'realized-gain': ['Realized gain', 'The profit you lock in when you sell an investment for more than you paid. It is taxed in the year you sell.'],
+    apr: ['APR', 'Annual percentage rate: the yearly interest rate. A 24% card APR is about 2% per month on the unpaid balance.'],
+  },
+  zh: {
+    dotted: ['就像这样', '点击任何带下划线的词，查看它的意思。点击其他地方或按 Esc 关闭。'],
+    ledger: ['流水账', '按时间顺序记下的每一笔资金事件。每行写明哪些账户增加或减少。三张报表就是把这份清单用三种不同的方式加总。'],
+    'income-statement': ['利润表', '一段时期（一个月、一年）内挣到的钱减去花掉的钱，也叫损益表（P&L）。对家庭来说，它回答的是：我们量入为出了吗？'],
+    'cash-flow': ['现金流量表', '一段时期内流入或流出银行账户的每一块钱，分为三类：经营活动、投资活动和筹资活动。'],
+    'balance-sheet': ['资产负债表', '某一天的快照：你拥有的一切（资产）、你欠的一切（负债），以及两者之差（净资产）。'],
+    asset: ['资产', '你拥有的、有金钱价值的东西：现金、投资、房子、汽车。'],
+    liability: ['负债', '你欠的钱：房贷、车贷、信用卡欠款。'],
+    'net-worth': ['净资产', '资产减去负债：卖掉一切、还清所有债务后剩下的钱。企业称之为所有者权益。'],
+    income: ['收入', '让你变富的、挣来的钱：工资、奖金、利息、雇主的 401(k) 配款。'],
+    expense: ['费用', '用掉的、让你变穷的钱：税、利息、食品、汽车贬值。偿还贷款本金<b>不是</b>费用。'],
+    'net-income': ['净利润', '收入减去费用。对家庭来说，就是这段时期真正存下的钱，是利润表的最后一行。'],
+    comprehensive: ['综合收益', '净利润加上其他综合收益（市值变动）。对家庭来说，它等于这段时期净资产的变动。'],
+    'market-change': ['市值变动', '股票或房子涨价或跌价。净资产变了，但既没有挣钱也没有花钱，也没有现金流动，所以放在净利润下面。企业把它列为其他综合收益（OCI）。'],
+    operating: ['经营活动现金流量', '日常生活产生的现金：工资流入；税费、账单、食品和利息流出。'],
+    investing: ['投资活动现金流量', '购买（或出售）长期持有之物所付出（或收到）的现金：汽车、房屋改造、股票、401(k) 缴款。'],
+    financing: ['筹资活动现金流量', '借入或偿还的现金：新贷款流入，贷款本金流出。利息不在这里，它属于经营活动的费用。'],
+    'gross-pay': ['税前工资', '扣除任何项目之前的工资。你实际收到的到手工资更少。'],
+    withholding: ['代扣税款', '雇主从每笔工资中扣下所得税、社会保障税和医疗保险税，替你交给政府。（这里简化为一个固定税率。）'],
+    'pre-tax': ['税前 401(k)', '在计算所得税之前存入 401(k) 的钱：现在少交税，退休取出时再交。'],
+    match: ['雇主配款', '雇主往你的 401(k) 里加钱，常见的是你每存 1 美元加 50 美分，有上限。它是真实的收入，但从不经过你的银行账户。'],
+    principal: ['本金', '贷款还款中偿还所借款项本身的部分。它让贷款变少，所以不是费用。'],
+    interest: ['利息', '借钱的代价。它是费用：付了得不到任何东西。'],
+    accrual: ['权责发生制', '费用在发生时（刷卡时）入账，而不是在现金流出时（还账单时）。这就是净利润和现金流量可能不一样的原因。'],
+    depreciation: ['折旧', '你拥有的东西（比如汽车）随着使用年限而贬值。这是真实的成本，所以是费用，但没有现金流出。'],
+    'non-cash': ['非现金项目', '改变净利润或净资产、却没有钱进出银行的事项：折旧、雇主配款、市价变动。'],
+    'book-value': ['账面价值', '汽车在你自己的资产负债表上的价值：买价减去到目前为止已记录的折旧。'],
+    capex: ['资本性支出', '花在能长期使用、增加价值的东西上的钱（新厨房、汽车）。它成为资产，而不是费用。只恢复原状的维修属于费用。'],
+    'cost-basis': ['成本基础', '你当初买入一项投资付的钱。高于它卖出就有收益，收益要交税。'],
+    'realized-gain': ['已实现收益', '以高于买价的价格卖出投资时锁定的利润，在卖出当年交税。'],
+    apr: ['年利率（APR）', '按年计算的利率。信用卡 24% 的年利率，约等于未还余额每月 2%。'],
+  },
+};
+const G = () => GLOSS[LANG];
+const lc = t => LANG === 'zh' || /^[A-Z]{2}/.test(t) ? t : t[0].toLowerCase() + t.slice(1);
+const T = (k, txt) => `<span class="term" data-term="${k}" tabindex="0">${txt || lc(G()[k][0])}</span>`;
+
+// ---------- money formatting ----------
+// Explanations, ledger and change badges: normal signs, e.g. −$1,234 / +$1,234.
+const rnd = v => Math.sign(v) * Math.round(Math.abs(v));
+const fmt = v => { const r = rnd(v); const s = '$' + Math.abs(r).toLocaleString('en-US'); return r < 0 ? '−' + s : s; };
+const sgn = v => { const r = rnd(v); return r === 0 ? '$0' : (r > 0 ? '+' : '−') + '$' + Math.abs(r).toLocaleString('en-US'); };
+// Statement cells: the format of a published company report. Negatives in parentheses,
+// zero as a dash, "$" only on the first amount of a column and on grand totals.
+// Non-negative amounts get an invisible ")" so the digits line up.
+const acct = (v, dollar) => {
+  const r = rnd(v), pad = '<span style="visibility:hidden">)</span>';
+  if (r === 0) return '—' + pad;
+  const s = (dollar ? '$' : '') + Math.abs(r).toLocaleString('en-US');
+  return r < 0 ? '(' + s + ')' : s + pad;
+};
+const pmt = (ratePct, n, pv) => { const r = ratePct / 1200; return r === 0 ? pv / n : pv * r / (1 - Math.pow(1 + r, -n)); };
+
+// ---------- accounts and statement lines ----------
+const ASSETS = ['checking', 'brokerage', 'k401', 'home', 'car'];
+const LIABS = ['card', 'carLoan', 'mortgage'];
+const ACCT_L = {
+  checking: ['Checking (cash)', '支票账户（现金）'], brokerage: ['Brokerage account', '证券账户'], k401: ['401(k)s', '401(k) 账户'],
+  home: ['Home', '住房'], car: ['Car', '汽车'], card: ['Credit card', '信用卡'], carLoan: ['Car loan', '车贷'], mortgage: ['Mortgage', '房贷'],
+};
+const ACCT = a => L(ACCT_L[a]);
+const IS_LINES = {
+  salary: ['inc', ['Salaries', '工资薪金']], match: ['inc', ['Employer 401(k) match', '雇主 401(k) 配款']],
+  taxes: ['exp', ['Taxes', '税费']], mortInt: ['exp', ['Mortgage interest', '房贷利息']], carInt: ['exp', ['Car loan interest', '车贷利息']], cardInt: ['exp', ['Credit card interest', '信用卡利息']],
+  living: ['exp', ['Groceries, dining, shopping', '食品、餐饮、购物']], medical: ['exp', ['Medical bill', '医疗费']], repairs: ['exp', ['Home repairs', '房屋维修费']],
+  dep: ['exp', ['Car depreciation', '汽车折旧']], tradeLoss: ['exp', ['Loss (gain) on car trade-in', '旧车置换损失（收益）']],
+  market: ['mkt', ['Unrealized gain (loss) on investments', '投资未实现收益（损失）']], homeVal: ['mkt', ['Change in home value', '房产价值变动']],
+};
+const CF_LINES = {
+  salaryIn: ['op', ['Salaries received', '收到的工资薪金']], taxPaid: ['op', ['Taxes paid', '支付的税费']], mortIntPaid: ['op', ['Mortgage interest paid', '支付的房贷利息']], carIntPaid: ['op', ['Car loan interest paid', '支付的车贷利息']],
+  cardPaid: ['op', ['Credit card bills paid', '偿还的信用卡账单']], repairsPaid: ['op', ['Repairs paid', '支付的维修费']],
+  k401: ['inv', ['401(k) contributions', '401(k) 缴款']], brokBuy: ['inv', ['Bought investments', '购买投资支付的现金']], brokSell: ['inv', ['Sold investments', '出售投资收到的现金']],
+  carBuy: ['inv', ['Bought a car', '购买汽车支付的现金']], carSell: ['inv', ['Traded in the old car', '旧车置换收到的现金']], improve: ['inv', ['Home improvement', '房屋改造支出']],
+  mortPrin: ['fin', ['Mortgage principal repaid', '偿还房贷本金']], carPrin: ['fin', ['Car loan principal repaid', '偿还车贷本金']], loanIn: ['fin', ['New car loan', '取得新车贷款']], loanPayoff: ['fin', ['Car loan paid off', '还清车贷']],
+};
+
+// ---------- the household ----------
+const HOUSE_FIELDS = [
+  [['Pay', '工资'], [['salaryA', ['Alex salary ($/yr)', 'Alex 年薪 ($)'], 125000], ['salaryB', ['Sam salary ($/yr)', 'Sam 年薪 ($)'], 90000], ['k401pct', ['401(k) contribution (% of pay)', '401(k) 缴款（占工资 %）'], 7], ['matchPct', ['Employer match (% of contribution)', '雇主配款（占缴款 %）'], 50], ['taxRate', ['Taxes withheld (% of pay after 401(k))', '代扣税款（占扣除 401(k) 后工资 %）'], 26]]],
+  [['What we own', '我们拥有的'], [['checking', ['Checking', '支票账户'], 31000], ['brokerage', ['Brokerage account', '证券账户'], 45000], ['brokBasis', ['…of which we paid in (cost basis)', '……其中投入的本金（成本基础）'], 32000], ['k401', ['401(k)s', '401(k) 账户'], 180000], ['home', ['Home value', '房屋价值'], 600000], ['car', ['Car value', '汽车价值'], 22000]]],
+  [['What we owe', '我们欠的'], [['card', ['Credit card (last month\'s bill)', '信用卡（上月账单）'], 2500], ['carLoan', ['Car loan', '车贷'], 15000], ['mortgage', ['Mortgage', '房贷'], 420000]]],
+  [['Loan terms', '贷款条件'], [['mortRate', ['Mortgage rate (%)', '房贷利率 (%)'], 6.25], ['mortMonths', ['Mortgage months left', '房贷剩余月数'], 336], ['carRate', ['Car loan APR (%)', '车贷年利率 (%)'], 7], ['carMonths', ['Car loan months left', '车贷剩余月数'], 36], ['carDepPct', ['Car loses value (%/yr)', '汽车每年贬值 (%)'], 15]]],
+];
+const HOUSE_DEFAULT = Object.fromEntries(HOUSE_FIELDS.flatMap(g => g[1].map(f => [f[0], f[2]])));
+let H = { ...HOUSE_DEFAULT };
+
+// ---------- reusable events ----------
+// A step: {title, story, takeaway, legs:{account: change}, is:[[line, effect on net worth]], cf:[[line, cash change]]}
+function payday(H, pct, label) {
+  const gross = (H.salaryA + H.salaryB) / 12, k = gross * pct / 100, tax = (gross - k) * H.taxRate / 100, net = gross - k - tax;
+  return {
+    title: label || tx('Payday', '发薪日'), short: tx('Paychecks', '工资'),
+    story: tx(`Alex and Sam earn ${fmt(gross)} together this month (${T('gross-pay')}). Before the money reaches checking, ${fmt(k)} goes into their 401(k)s (${pct.toFixed(1)}% ${T('pre-tax')}) and ${fmt(tax)} is ${T('withholding', 'withheld for taxes')}. Checking receives ${fmt(net)}.`,
+      `Alex 和 Sam 本月合计挣了 ${fmt(gross)}（${T('gross-pay')}）。钱到支票账户之前，${fmt(k)} 存入他们的 401(k)（${pct.toFixed(1)}%，${T('pre-tax')}），${fmt(tax)} 被${T('withholding', '代扣为税款')}。支票账户实收 ${fmt(net)}。`),
+    takeaway: tx(`The full ${fmt(gross)} is ${T('income')}. Taxes are an ${T('expense')}. The 401(k) money is <b>not</b> an expense: it is still yours, just moved to another ${T('asset')}, so the cash flow puts it under ${T('investing', 'investing')}.`,
+      `全部 ${fmt(gross)} 都是${T('income')}。税是${T('expense')}。401(k) 的钱<b>不是</b>费用：它仍然是你的，只是转到了另一项${T('asset')}里，所以现金流量表把它放在${T('investing', '投资活动')}。`),
+    legs: { checking: net, k401: k }, is: [['salary', gross], ['taxes', -tax]], cf: [['salaryIn', gross], ['taxPaid', -tax], ['k401', -k]],
+  };
+}
+function matchStep(H, pct) {
+  const k = (H.salaryA + H.salaryB) / 12 * pct / 100, m = k * H.matchPct / 100;
+  return {
+    title: tx('Employer adds the 401(k) match', '雇主往 401(k) 里配款'), short: tx('Match', '配款'),
+    story: tx(`The employers put ${fmt(m)} into the 401(k)s as an ${T('match', 'employer match')} (${H.matchPct}% of what Alex and Sam contributed).`,
+      `雇主往 401(k) 里存入 ${fmt(m)} 作为${T('match')}（Alex 和 Sam 缴款额的 ${H.matchPct}%）。`),
+    takeaway: tx(`It is ${T('income')} (net worth goes up), but it never touches checking. A ${T('non-cash')}: nothing appears on the cash flow statement.`,
+      `它是${T('income')}（净资产增加），但从不经过支票账户。这是${T('non-cash')}：现金流量表上什么都没有。`),
+    legs: { k401: m }, is: [['match', m]], cf: [],
+  };
+}
+function loanPayment(bal, rate, months, kind) {
+  const p = pmt(rate, months, bal), i = bal * rate / 1200, pr = p - i;
+  const mort = kind === 'mort';
+  return {
+    title: mort ? tx('Pay the mortgage', '还房贷') : tx('Pay the car loan', '还车贷'), short: mort ? tx('Mortgage', '房贷') : tx('Car payment', '车贷'),
+    story: tx(`The ${mort ? 'mortgage' : 'car loan'} payment of ${fmt(p)} leaves checking. The lender splits it: ${fmt(i)} is ${T('interest')} and ${fmt(pr)} is ${T('principal')}.`,
+      `${mort ? '房贷' : '车贷'}月供 ${fmt(p)} 从支票账户扣出。贷款方把它拆成两部分：${fmt(i)} 是${T('interest')}，${fmt(pr)} 是${T('principal')}。`),
+    takeaway: tx(`One payment, two statements. The interest is an ${T('expense')} (and ${T('operating', 'operating')} cash). The principal is not an expense: it shrinks a ${T('liability')}, so it is ${T('financing', 'financing')} cash and net worth does not change from it.`,
+      `一笔还款，两张报表。利息是${T('expense')}（现金流量属于${T('operating', '经营活动')}）。本金不是费用：它减少了一项${T('liability')}，所以属于${T('financing', '筹资活动')}，净资产不因它而变。`),
+    legs: mort ? { checking: -p, mortgage: -pr } : { checking: -p, carLoan: -pr },
+    is: [[mort ? 'mortInt' : 'carInt', -i]], cf: [[mort ? 'mortIntPaid' : 'carIntPaid', -i], [mort ? 'mortPrin' : 'carPrin', -pr]],
+  };
+}
+const cardSpend = (amt, line = 'living', what) => ({
+  title: tx('Spend on the credit card', '用信用卡消费'), short: tx('Card spending', '刷卡'),
+  story: tx(`They put ${fmt(amt)} of ${what ? what[0] : 'groceries, dining and shopping'} on the credit card. No cash leaves the bank today.`,
+    `他们用信用卡支付了 ${fmt(amt)} 的${what ? what[1] : '食品、餐饮和购物'}。今天没有现金离开银行。`),
+  takeaway: tx(`It is an ${T('expense')} right now, when the card is swiped (${T('accrual')}). The card balance, a ${T('liability')}, grows instead of cash shrinking. The cash flow statement shows nothing until the bill is paid.`,
+    `刷卡的这一刻它就是${T('expense')}（${T('accrual')}）。现金没有减少，而是信用卡欠款这项${T('liability')}增加了。在还账单之前，现金流量表上什么都没有。`),
+  legs: { card: amt }, is: [[line, -amt]], cf: [],
+});
+const cardPay = (amt, note) => ({
+  title: tx('Pay the credit card bill', '还信用卡账单'), short: tx('Card bill', '还卡'),
+  story: tx(`They pay ${fmt(amt)} to the credit card company from checking.`, `他们从支票账户向信用卡公司还款 ${fmt(amt)}。`) + (note ? tx(' ', '') + note : ''),
+  takeaway: tx(`Not an expense: the spending was already counted when the card was swiped. Cash goes down and the debt goes down by the same amount. The cash leaves under ${T('operating', 'operating')}, because it pays for living costs.`,
+    `这不是费用：消费在刷卡时就已经记过了。现金减少，债务减少同样的金额。这笔现金记在${T('operating', '经营活动')}，因为它支付的是生活开销。`),
+  legs: { checking: -amt, card: -amt }, is: [], cf: [['cardPaid', -amt]],
+});
+const depStep = (value, pct) => {
+  const d = value * pct / 100 / 12;
+  return {
+    title: tx('The car gets a month older', '汽车又老了一个月'), short: tx('Depreciation', '折旧'),
+    story: tx(`A car loses value as it ages. This month it lost about ${fmt(d)} (${pct}% a year).`, `汽车随着车龄增长而贬值。这个月它大约贬值了 ${fmt(d)}（每年 ${pct}%）。`),
+    takeaway: tx(`${T('depreciation', 'Depreciation')} is an ${T('expense')}: owning the car really cost that much. But no cash moved, so the cash flow statement ignores it. This is why net income and cash flow differ.`,
+      `${T('depreciation')}是${T('expense')}：拥有这辆车确实花了这么多。但没有现金流动，所以现金流量表不管它。这就是净利润和现金流量不一样的原因。`),
+    legs: { car: -d }, is: [['dep', -d]], cf: [],
+  };
+};
+
+// ---------- scenarios ----------
+const SCENARIOS = [
+  { id: 'month', name: ['A normal month', '普通的一个月'], intro: ['One ordinary month: paychecks, the mortgage, the car, the credit card, and a bit of investing.', '平常的一个月：发工资、还房贷、还车贷、刷信用卡，再做一点投资。'],
+    params: [['spend', ['Card spending this month ($)', '本月刷卡消费 ($)'], 3000], ['invest', ['Invest in brokerage ($)', '投入证券账户 ($)'], 1000], ['mkt', ['Stock market this month (%)', '本月股市涨跌 (%)'], 0.6]],
+    steps: (H, p) => {
+      const g = H.k401 + H.brokerage, m = g * p.mkt / 100;
+      return [payday(H, H.k401pct), matchStep(H, H.k401pct), loanPayment(H.mortgage, H.mortRate, H.mortMonths, 'mort'),
+        loanPayment(H.carLoan, H.carRate, H.carMonths, 'car'), cardSpend(p.spend), cardPay(H.card, tx('(That was last month\'s bill.)', '（这是上个月的账单。）')),
+        { title: tx('Invest some savings', '把一部分储蓄拿去投资'), short: tx('Invest', '投资'),
+          story: tx(`They move ${fmt(p.invest)} from checking into their brokerage account and buy index funds.`, `他们从支票账户转 ${fmt(p.invest)} 到证券账户，买入指数基金。`),
+          takeaway: tx(`Cash becomes another ${T('asset')}. Net worth does not change and it is not an expense; the cash flow shows it under ${T('investing', 'investing')}.`,
+            `现金变成了另一项${T('asset')}。净资产不变，也不是费用；现金流量表把它列在${T('investing', '投资活动')}。`),
+          legs: { checking: -p.invest, brokerage: p.invest }, is: [], cf: [['brokBuy', -p.invest]] },
+        depStep(H.car, H.carDepPct),
+        { title: tx('The stock market moves', '股市波动'), short: tx('Market', '市场'),
+          story: tx(`Stocks moved ${p.mkt}% this month, so the 401(k)s and brokerage account changed by ${sgn(m)}.`, `本月股市变动 ${p.mkt}%，401(k) 和证券账户合计变动 ${sgn(m)}。`),
+          takeaway: tx(`A ${T('market-change')}: net worth changes but nothing was earned, spent or sold. It sits below net income on the income statement, and the cash flow ignores it.`,
+            `这是${T('market-change')}：净资产变了，但没有挣钱、花钱或卖出任何东西。它在利润表上列在净利润下面，现金流量表不管它。`),
+          legs: { k401: m * H.k401 / g, brokerage: m * H.brokerage / g }, is: [['market', m]], cf: [] }];
+    } },
+  { id: 'car', name: ['Buy a new car with a loan', '贷款买新车'], intro: ['Trade in the old car, pay off its loan, buy a new one with a new loan.', '旧车置换、还清旧车贷，再贷款买一辆新车。'],
+    params: [['price', ['New car price ($)', '新车价格 ($)'], 38000], ['down', ['Cash down payment ($)', '现金首付 ($)'], 5000], ['trade', ['Dealer\'s trade-in offer ($)', '经销商的旧车置换报价 ($)'], 17000], ['rate', ['New loan APR (%)', '新车贷年利率 (%)'], 6.9], ['term', ['New loan term (months)', '新车贷期限（月）'], 60]],
+    steps: (H, p) => {
+      const loan = p.price - p.down - p.trade + H.carLoan, loss = p.trade < H.car;
+      return [
+        { title: tx('Trade in the old car', '旧车置换'), short: tx('Trade-in', '置换'),
+          story: tx(`The dealer offers ${fmt(p.trade)} for the old car. On the balance sheet it was worth ${fmt(H.car)} (its ${T('book-value')}).`,
+            `经销商给旧车报价 ${fmt(p.trade)}。它在资产负债表上的价值是 ${fmt(H.car)}（${T('book-value')}）。`),
+          takeaway: tx(`The car (an ${T('asset')}) is gone and the trade-in money comes in under ${T('investing', 'investing')}. The difference of ${sgn(p.trade - H.car)} is a ${loss ? 'loss, an' : 'gain, a kind of'} ${T(loss ? 'expense' : 'income')} on the income statement, but a ${T('non-cash')}.`,
+            `旧车（一项${T('asset')}）没了，置换款作为${T('investing', '投资活动')}流入。差额 ${sgn(p.trade - H.car)} 是一笔${loss ? '损失，属于利润表上的' + T('expense') : '收益，属于利润表上的一种' + T('income')}，但它是${T('non-cash')}。`),
+          legs: { car: -H.car, checking: p.trade }, is: [['tradeLoss', p.trade - H.car]], cf: [['carSell', p.trade]] },
+        { title: tx('Pay off the old car loan', '还清旧车贷'), short: tx('Old loan', '旧车贷'),
+          story: tx(`The dealer pays off the ${fmt(H.carLoan)} still owed on the old car, using money from the deal.`, `经销商用这笔交易的钱，替他们还清旧车还欠的 ${fmt(H.carLoan)}。`),
+          takeaway: tx(`Repaying a loan is ${T('financing', 'financing')}. Cash and the debt fall together, so net worth does not change and nothing hits the income statement.`,
+            `偿还贷款属于${T('financing', '筹资活动')}。现金和债务一起减少，所以净资产不变，利润表上也没有任何变化。`),
+          legs: { checking: -H.carLoan, carLoan: -H.carLoan }, is: [], cf: [['loanPayoff', -H.carLoan]] },
+        { title: tx('Buy the new car', '买新车'), short: tx('Buy', '买车'),
+          story: tx(`They buy the new car for ${fmt(p.price)}.`, `他们以 ${fmt(p.price)} 买下新车。`),
+          takeaway: tx(`Buying a car is <b>not</b> an expense. Cash turns into a car, another ${T('asset')}, so net worth does not change. On the cash flow it is ${T('investing', 'investing')}, like a company buying a machine.`,
+            `买车<b>不是</b>费用。现金变成了汽车这另一项${T('asset')}，所以净资产不变。在现金流量表上它属于${T('investing', '投资活动')}，就像企业购买机器一样。`),
+          legs: { checking: -p.price, car: p.price }, is: [], cf: [['carBuy', -p.price]] },
+        { title: tx('Borrow the rest', '剩下的钱贷款'), short: tx('New loan', '新车贷'),
+          story: tx(`The bank lends ${fmt(loan)} at ${p.rate}% for ${p.term} months. Price ${fmt(p.price)} − down payment ${fmt(p.down)} − trade-in ${fmt(p.trade)} + old loan ${fmt(H.carLoan)} = ${fmt(loan)}.`,
+            `银行贷给他们 ${fmt(loan)}，年利率 ${p.rate}%，期限 ${p.term} 个月。车价 ${fmt(p.price)} − 首付 ${fmt(p.down)} − 置换款 ${fmt(p.trade)} + 旧车贷 ${fmt(H.carLoan)} = ${fmt(loan)}。`),
+          takeaway: tx(`Borrowing brings cash in under ${T('financing', 'financing')} and adds a ${T('liability')} of the same size. Borrowing is not income: you have to pay it back. Over the whole deal, checking only dropped by the ${fmt(p.down)} down payment.`,
+            `借款带来的现金记在${T('financing', '筹资活动')}，同时增加同样金额的${T('liability')}。借款不是收入：你得还回去。整笔交易下来，支票账户只少了首付的 ${fmt(p.down)}。`),
+          legs: { checking: loan, carLoan: loan }, is: [], cf: [['loanIn', loan]] },
+        loanPayment(loan, p.rate, p.term, 'car'), depStep(p.price, H.carDepPct)];
+    } },
+  { id: 'card', name: ['Carry a credit card balance', '信用卡不还清'], intro: ['What happens when you pay less than the full credit card bill.', '信用卡账单只还一部分会怎样。'],
+    params: [['spend', ['Card spending per month ($)', '每月刷卡消费 ($)'], 3000], ['pay', ['Payment per month ($)', '每月还款 ($)'], 500], ['apr', ['Card APR (%)', '信用卡年利率 (%)'], 24]],
+    steps: (H, p) => {
+      const owed1 = H.card + p.spend - p.pay, i1 = owed1 * p.apr / 1200, owed2 = owed1 + i1 + p.spend - p.pay, i2 = owed2 * p.apr / 1200;
+      return [cardSpend(p.spend), cardPay(p.pay, tx(`That is less than the ${fmt(H.card + p.spend)} they owe, so ${fmt(owed1)} carries over.`, `这比他们欠的 ${fmt(H.card + p.spend)} 少，所以 ${fmt(owed1)} 留到下个月。`)),
+        { title: tx('Interest is charged', '被收利息'), short: tx('Interest', '利息'),
+          story: tx(`The card charges ${p.apr}% a year (${T('apr')}) on the ${fmt(owed1)} left unpaid: ${fmt(i1)} this month.`, `信用卡对未还的 ${fmt(owed1)} 按每年 ${p.apr}%（${T('apr')}）收利息：本月 ${fmt(i1)}。`),
+          takeaway: tx(`${T('interest', 'Interest')} is an ${T('expense')} that buys nothing. It is added to the card balance, so no cash leaves today.`,
+            `${T('interest')}是一笔什么也买不到的${T('expense')}。它加到信用卡欠款上，所以今天没有现金流出。`),
+          legs: { card: i1 }, is: [['cardInt', -i1]], cf: [] },
+        { ...cardSpend(p.spend), title: tx('Next month: spend again', '下个月：再次消费'), short: tx('Spend again', '再刷卡') },
+        cardPay(p.pay, tx('Again only part of the bill.', '又只还了一部分。')),
+        { title: tx('More interest', '更多利息'), short: tx('Interest', '利息'),
+          story: tx(`Interest is now charged on ${fmt(owed2)}: ${fmt(i2)}. The balance keeps growing.`, `现在按 ${fmt(owed2)} 收利息：${fmt(i2)}。欠款越滚越多。`),
+          takeaway: tx(`Compare the credit card line on the balance sheet with where it started. Paying in full would have kept it at ${fmt(H.card)} with zero interest.`,
+            `对比资产负债表上信用卡这一行和起点的数字。如果每月全额还款，它会保持在 ${fmt(H.card)}，利息为零。`),
+          legs: { card: i2 }, is: [['cardInt', -i2]], cf: [] }];
+    } },
+  { id: 'max401k', name: ['Max out the 401(k)', '401(k) 存满上限'], intro: ['Two paydays: one at the usual contribution, one at the 2025 maximum ($23,500 each a year).', '两个发薪日：一次按平常的比例缴款，一次按 2025 年上限缴款（每人每年 $23,500）。'],
+    params: [],
+    steps: (H) => {
+      const gross = (H.salaryA + H.salaryB) / 12, maxPct = Math.min(100, 47000 / 12 / gross * 100);
+      const a = payday(H, H.k401pct, tx(`Payday at ${H.k401pct}%`, `发薪日（缴款 ${H.k401pct}%）`)), b = payday(H, maxPct, tx('Next payday at the maximum', '下一个发薪日（按上限缴款）'));
+      const tA = -a.is[1][1], tB = -b.is[1][1];
+      b.takeaway = tx(`Compare with the step before: checking got ${fmt(a.legs.checking - b.legs.checking)} less, but taxes dropped by ${fmt(tA - tB)}. Because taxes are an expense and the 401(k) money is not, <b>net income goes up</b> even though there is less cash to spend. Pre-tax saving is the government chipping in.`,
+        `和上一步对比：支票账户少收了 ${fmt(a.legs.checking - b.legs.checking)}，但税少交了 ${fmt(tA - tB)}。因为税是费用而 401(k) 的钱不是，所以尽管能花的现金少了，<b>净利润反而增加</b>。税前储蓄相当于政府替你出了一部分。`);
+      return [a, b];
+    } },
+  { id: 'crash', name: ['Stock market crash', '股市暴跌'], intro: ['Markets fall hard. What changes, and what doesn\'t?', '市场大跌。什么变了，什么没变？'],
+    params: [['stock', ['Stocks fall (%)', '股票下跌 (%)'], 30], ['home', ['Home value falls (%)', '房价下跌 (%)'], 8]],
+    steps: (H, p) => {
+      const a = -H.k401 * p.stock / 100, b = -H.brokerage * p.stock / 100, h = -H.home * p.home / 100;
+      return [
+        { title: tx('Stocks drop', '股票下跌'), short: tx('Stocks', '股票'),
+          story: tx(`Stocks fall ${p.stock}%. The 401(k)s lose ${fmt(-a)} and the brokerage account ${fmt(-b)}.`, `股票下跌 ${p.stock}%。401(k) 损失 ${fmt(-a)}，证券账户损失 ${fmt(-b)}。`),
+          takeaway: tx(`A ${T('market-change')}: net worth drops a lot, yet net income and cash are untouched. Nothing was spent or sold. A bad market does not mean you overspent.`,
+            `这是${T('market-change')}：净资产大幅下降，但净利润和现金都没动。没有花钱，也没有卖出。市场不好不代表你花多了。`),
+          legs: { k401: a, brokerage: b }, is: [['market', a + b]], cf: [] },
+        { title: tx('Home prices dip', '房价下滑'), short: tx('Home', '住房'),
+          story: tx(`Nearby homes sell for less; the home's estimated value falls ${p.home}% (${fmt(-h)}).`, `附近的房子卖得更便宜了；这套房子的估值下跌 ${p.home}%（${fmt(-h)}）。`),
+          takeaway: tx(`Again only net worth moves. The mortgage is still the same: what you owe does not shrink when the house is worth less.`,
+            `又是只有净资产在变。房贷还是一样：房子不值钱了，你欠的钱并不会变少。`),
+          legs: { home: h }, is: [['homeVal', h]], cf: [] },
+        { ...payday(H, H.k401pct), title: tx('Life goes on: payday', '生活照旧：发薪日'),
+          takeaway: tx(`Paychecks, taxes and 401(k) contributions continue as usual. The contributions now buy stocks at lower prices.`, `工资、税和 401(k) 缴款照常进行。现在的缴款能以更低的价格买入股票。`) }];
+    } },
+  { id: 'reno', name: ['Kitchen renovation', '厨房装修'], intro: ['A big project paid in cash: part upgrade, part repair.', '一个用现金支付的大工程：一部分是升级，一部分是维修。'],
+    params: [['cost', ['Total cost ($)', '总花费 ($)'], 40000], ['upgrade', ['Upgrade share (%)', '升级部分占比 (%)'], 80]],
+    steps: (H, p) => {
+      const c = p.cost * p.upgrade / 100, r = p.cost - c;
+      return [
+        { title: tx('Pay for the upgrade', '支付升级费用'), short: tx('Upgrade', '升级'),
+          story: tx(`New cabinets, counters and layout: ${fmt(c)}. This makes the house worth more.`, `新橱柜、台面和布局：${fmt(c)}。这让房子更值钱。`),
+          takeaway: tx(`A ${T('capex', 'capital expense')}: cash becomes part of the home ${T('asset')}. Not on the income statement; the cash flow shows it as ${T('investing', 'investing')}.`,
+            `这是${T('capex')}：现金变成了住房这项${T('asset')}的一部分。不进利润表；现金流量表把它列为${T('investing', '投资活动')}。`),
+          legs: { checking: -c, home: c }, is: [], cf: [['improve', -c]] },
+        { title: tx('Pay for the repairs', '支付维修费用'), short: tx('Repairs', '维修'),
+          story: tx(`Fixing water damage and old wiring found during the work: ${fmt(r)}. This only restores what was there.`, `修复施工中发现的水渍损坏和老化电线：${fmt(r)}。这只是恢复原状。`),
+          takeaway: tx(`Repairs are an ${T('expense')} (and ${T('operating', 'operating')} cash). Cash fell by the full ${fmt(p.cost)}, but net worth fell only by the ${fmt(r)} of repairs.`,
+            `维修是${T('expense')}（现金流量属于${T('operating', '经营活动')}）。现金减少了全部 ${fmt(p.cost)}，但净资产只减少了维修的 ${fmt(r)}。`),
+          legs: { checking: -r }, is: [['repairs', -r]], cf: [['repairsPaid', -r]] }];
+    } },
+  { id: 'sell', name: ['Sell stocks for cash', '卖股票换现金'], intro: ['Sell part of the brokerage account and pay tax on the gain.', '卖掉证券账户里的一部分，并为收益交税。'],
+    params: [['amount', ['Amount to sell ($)', '卖出金额 ($)'], 15000], ['rate', ['Tax rate on the gain (%)', '收益税率 (%)'], 15]],
+    steps: (H, p) => {
+      const amt = Math.min(p.amount, H.brokerage), basis = amt * H.brokBasis / H.brokerage, gain = amt - basis, tax = gain * p.rate / 100;
+      return [
+        { title: tx('Sell the stocks', '卖出股票'), short: tx('Sell', '卖出'),
+          story: tx(`They sell ${fmt(amt)} of index funds. They had paid ${fmt(basis)} for them (the ${T('cost-basis')}).`, `他们卖出 ${fmt(amt)} 的指数基金。当初买入花了 ${fmt(basis)}（${T('cost-basis')}）。`),
+          takeaway: tx(`Proceeds come in under ${T('investing', 'investing')}. Net worth does not change: the stocks were already counted at today's price, they just turned into cash. The ${fmt(gain)} rise was counted earlier as a ${T('market-change')}.`,
+            `卖出所得记在${T('investing', '投资活动')}。净资产不变：股票本来就按今天的价格计算，只是变成了现金。${fmt(gain)} 的涨幅之前已经作为${T('market-change')}记过了。`),
+          legs: { brokerage: -amt, checking: amt }, is: [], cf: [['brokSell', amt]] },
+        { title: tx('Pay tax on the gain', '为收益交税'), short: tx('Tax', '税'),
+          story: tx(`The ${fmt(gain)} profit is a ${T('realized-gain')}, taxed at ${p.rate}%: ${fmt(tax)}.`, `${fmt(gain)} 的利润是${T('realized-gain')}，按 ${p.rate}% 交税：${fmt(tax)}。`),
+          takeaway: tx(`The tax is a real ${T('expense')} paid in cash. Selling did not make them richer; it only made them pay tax.`, `税是一笔用现金支付的真实${T('expense')}。卖出没有让他们变富，只是让他们交了税。`),
+          legs: { checking: -tax }, is: [['taxes', -tax]], cf: [['taxPaid', -tax]] }];
+    } },
+  { id: 'payoff', name: ['Pay off the car loan early', '提前还清车贷'], intro: ['Use savings to clear the car loan.', '用储蓄还清车贷。'],
+    params: [],
+    steps: (H) => {
+      const next = loanPayment(H.carLoan, H.carRate, H.carMonths, 'car');
+      return [{ title: tx('Pay off the car loan', '还清车贷'), short: tx('Payoff', '还清'),
+        story: tx(`They pay the remaining ${fmt(H.carLoan)} of the car loan from checking.`, `他们从支票账户还清车贷剩余的 ${fmt(H.carLoan)}。`),
+        takeaway: tx(`${T('financing', 'Financing')} cash out. Cash and debt fall by the same amount, so net worth does not change. The win comes later: the ${fmt(-next.is[0][1])} of ${T('interest')} they would have paid next month is gone, and the ${fmt(-next.legs.checking)} payment stays in checking.`,
+          `${T('financing', '筹资活动')}现金流出。现金和债务减少同样的金额，所以净资产不变。好处在后面：下个月本要付的 ${fmt(-next.is[0][1])} ${T('interest')}没了，${fmt(-next.legs.checking)} 的月供也留在了支票账户里。`),
+        legs: { checking: -H.carLoan, carLoan: -H.carLoan }, is: [], cf: [['loanPayoff', -H.carLoan]] }];
+    } },
+  { id: 'medical', name: ['Medical bill on the card', '刷卡付医疗费'], intro: ['A surprise bill, charged now and paid next month.', '一张意外的账单：现在刷卡，下个月还款。'],
+    params: [['amount', ['Bill ($)', '账单金额 ($)'], 6000]],
+    steps: (H, p) => [
+      { ...cardSpend(p.amount, 'medical', ['medical bills', '医疗费']), title: tx('Charge the medical bill', '刷卡支付医疗费') },
+      cardPay(p.amount, tx('One month later, they pay it in full.', '一个月后，他们全额还清。'))] },
+];
+
+// ---------- engine ----------
+const scenParams = {};
+const paramsOf = s => scenParams[s.id] || (scenParams[s.id] = Object.fromEntries(s.params.map(f => [f[0], f[2]])));
+let scen = SCENARIOS[0], steps = [], cur = 0, stab = 'is';
+
+function nwOf(legs) { let n = 0; for (const a in legs) n += LIABS.includes(a) ? -legs[a] : legs[a]; return n; }
+function check(st) {
+  const isSum = st.is.reduce((s, x) => s + x[1], 0), cfSum = st.cf.reduce((s, x) => s + x[1], 0);
+  return Math.abs(nwOf(st.legs) - isSum) < 0.01 && Math.abs((st.legs.checking || 0) - cfSum) < 0.01;
+}
+function build() {
+  steps = scen.steps(H, paramsOf(scen));
+  steps.forEach((st, i) => { if (!check(st)) console.error('Step does not balance:', scen.id, i, st.title); });
+}
+function totals(upto) {
+  const bal = {}; ASSETS.concat(LIABS).forEach(a => bal[a] = H[a]);
+  const is = {}, cf = {};
+  for (let i = 0; i < upto; i++) {
+    const st = steps[i];
+    for (const a in st.legs) bal[a] += st.legs[a];
+    for (const [k, v] of st.is) is[k] = (is[k] || 0) + v;
+    for (const [k, v] of st.cf) cf[k] = (cf[k] || 0) + v;
+  }
+  return { bal, is, cf };
+}
+
+// ---------- rendering ----------
+const $ = s => document.querySelector(s);
+const last = () => steps.length + 1; // 0 = starting point, 1..n = events, n+1 = wrap-up
+
+function renderStory() {
+  const n = steps.length;
+  if (cur === 0) {
+    $('#story').innerHTML = `<div class="n">${tx('Starting point', '起点')}</div><h2>${L(scen.name)}</h2><p>${L(scen.intro)}</p>
+      <p>${tx(`Below is where Alex and Sam stand today. The ${T('balance-sheet')} shows what they own and owe. The ${T('income-statement')} and ${T('cash-flow')} are empty: they only collect what happens from here on.`,
+        `下面是 Alex 和 Sam 今天的状况。${T('balance-sheet')}显示他们拥有什么、欠什么。${T('income-statement')}和${T('cash-flow')}是空的：它们只收集从现在开始发生的事。`)}</p>
+      <div class="tip-box">${tx('Press <b>Next</b> to see the first event.', '按<b>下一步</b>查看第一个事件。')}</div>`;
+  } else if (cur === last()) {
+    const t = totals(n), ni = sumIs(t, ['inc', 'exp']), mk = sumIs(t, ['mkt']);
+    const nw0 = netWorth(totals(0).bal), nw1 = netWorth(t.bal), cash = Object.values(t.cf).reduce((s, v) => s + v, 0);
+    const ok = (c, txt) => `<div><span class="${c ? 'ok' : 'bad'}">${c ? '✓' : '✗'}</span>${txt}</div>`;
+    $('#story').innerHTML = `<div class="n">${tx('Wrap-up', '总结')}</div><h2>${tx('How the three statements tie together', '三张报表如何勾稽')}</h2>
+      <div class="ties">
+      ${ok(Math.abs(nw0 + ni + mk - nw1) < 1, tx(`<b>Income statement → balance sheet:</b> net worth at start ${fmt(nw0)} + ${T('net-income')} ${sgn(ni)} + ${T('market-change', 'market changes')} ${sgn(mk)} = net worth now ${fmt(nw1)}.`,
+        `<b>利润表 → 资产负债表：</b>期初净资产 ${fmt(nw0)} + ${T('net-income')} ${sgn(ni)} + ${T('market-change')} ${sgn(mk)} = 当前净资产 ${fmt(nw1)}。`))}
+      ${ok(Math.abs(H.checking + cash - t.bal.checking) < 1, tx(`<b>Cash flow → balance sheet:</b> cash at start ${fmt(H.checking)} + net change in cash ${sgn(cash)} = checking on the balance sheet ${fmt(t.bal.checking)}.`,
+        `<b>现金流量表 → 资产负债表：</b>期初现金 ${fmt(H.checking)} + 现金净变动 ${sgn(cash)} = 资产负债表上的支票账户 ${fmt(t.bal.checking)}。`))}
+      ${ok(true, tx(`<b>Income statement vs cash flow:</b> net income was ${sgn(ni)} but cash changed by ${sgn(cash)}. The gap comes from ${T('non-cash', 'non-cash items')}, card spending not yet paid, and money moved into or out of ${T('asset', 'assets')} and ${T('liability', 'loans')}.`,
+        `<b>利润表与现金流量表：</b>净利润是 ${sgn(ni)}，但现金变动了 ${sgn(cash)}。差额来自${T('non-cash')}、尚未还款的刷卡消费，以及转入或转出${T('asset')}和${T('liability', '贷款')}的钱。`))}
+      </div><div class="tip-box">${tx('Try another scenario from the menu at the top, or change its numbers.', '从顶部菜单换一个场景试试，或者修改它的数字。')}</div>`;
+  } else {
+    const st = steps[cur - 1];
+    $('#story').innerHTML = `<div class="n">${tx(`Step ${cur} of ${n}`, `第 ${cur} 步，共 ${n} 步`)}</div><h2>${st.title}</h2><p>${st.story}</p><div class="tip-box">💡 ${st.takeaway}</div>`;
+  }
+}
+function chips(st) {
+  const bs = Object.entries(st.legs).filter(([, v]) => Math.abs(v) > 0.5).map(([a, v]) => `<span class="chip bs">${ACCT(a)} ${sgn(v)}</span>`).join('');
+  const is = st.is.map(([k, v]) => `<span class="chip is">${L(IS_LINES[k][1])} ${sgn(v)}</span>`).join('');
+  const cf = st.cf.map(([k, v]) => `<span class="chip cf">${L(CF_LINES[k][1])} ${sgn(v)}</span>`).join('');
+  return { bs: bs || '<span class="none">—</span>', is: is || `<span class="none">${tx('not on it', '不影响')}</span>`, cf: cf || `<span class="none">${tx('no cash moved', '无现金流动')}</span>` };
+}
+function renderLedger() {
+  const upto = Math.min(cur, steps.length);
+  if (!upto) { $('#ledger').innerHTML = `<span class="none">${tx('Empty. Each event will be written here as one line.', '还是空的。每个事件都会在这里记成一行。')}</span>`; return; }
+  let h = `<table class="ledger"><tr class="hd"><th>#</th><th>${tx('Event', '事件')}</th><th>${T('balance-sheet', tx('Balance sheet accounts', '资产负债表账户'))}</th><th>${T('income-statement', tx('Income statement', '利润表'))}</th><th>${T('cash-flow', tx('Cash flow', '现金流量表'))}</th></tr>`;
+  for (let i = 0; i < upto; i++) {
+    const st = steps[i], c = chips(st), isCur = i === cur - 1;
+    h += `<tr class="${isCur ? 'cur' : 'old'}"><td>${i + 1}</td><td>${st.short || st.title}</td><td data-label="${tx('Balance sheet', '资产负债表')}">${c.bs}</td><td data-label="${tx('Income statement', '利润表')}">${c.is}</td><td data-label="${tx('Cash flow', '现金流量表')}">${c.cf}</td></tr>`;
+  }
+  $('#ledger').innerHTML = h + '</table>';
+}
+const sumIs = (t, groups) => Object.entries(t.is).reduce((s, [k, v]) => groups.includes(IS_LINES[k][0]) ? s + v : s, 0);
+const netWorth = bal => ASSETS.reduce((s, a) => s + bal[a], 0) - LIABS.reduce((s, a) => s + bal[a], 0);
+const delta = (v, invert) => { if (Math.abs(v) < 0.5) return ''; const up = invert ? v < 0 : v > 0; return `<span class="d ${up ? 'up' : 'dn'}">${sgn(v)}</span>`; };
+// One statement table. cls: '' item, 't' subtotal, 'g' grand total (double underline, "$").
+function stmtTable() {
+  let h = '<table>', first = true;
+  return {
+    head(label) { h += `<tr class="h"><td colspan="2">${label}</td></tr>`; },
+    empty() { h += `<tr><td class="empty" colspan="2">${tx('none yet', '暂无')}</td></tr>`; },
+    line(label, val, d = 0, cls = '', dInvert) {
+      const dollar = first || cls === 'g'; if (rnd(val) !== 0) first = false;
+      h += `<tr class="${cls}${Math.abs(d) > 0.5 ? ' hit' : ''}"><td class="${cls ? '' : 'l'}">${label}${delta(d, dInvert)}</td><td class="v">${acct(val, dollar)}</td></tr>`;
+    },
+    gap() { h += '<tr class="gap"><td colspan="2"></td></tr>'; },
+    html() { return h + '</table>'; },
+  };
+}
+const note = txt => ` <span class="note">${txt}</span>`;
+
+// Statement line labels. Chinese follows the PRC 企业会计准则 statement wording.
+const SL = {
+  income: ['Income', '一、收入'], totalIncome: ['Total income', '收入合计'], expenses: ['Expenses', '二、费用'], totalExpenses: ['Total expenses', '费用合计'],
+  ni: ['Net income (loss)', '三、净利润（净亏损）'], niNote: ['= true savings', '= 真实储蓄'],
+  oci: ['Other comprehensive income (loss)', '四、其他综合收益（损失）'], ci: ['Comprehensive income (loss)', '五、综合收益总额'], ciNote: ['= change in net worth', '= 净资产变动'],
+  cashBegin: ['Cash at beginning of period', '加：期初现金余额'], cashEnd: ['Cash at end of period', '六、期末现金余额'],
+  assets: ['Assets', '资产'], totalAssets: ['Total assets', '资产总计'], liabs: ['Liabilities', '负债'], totalLiabs: ['Total liabilities', '负债合计'],
+  nw: ['Net worth', '净资产'], nwNote: ['a company calls it equity', '企业称为所有者权益'], nwLine: ['Net worth', '净资产合计'], totalLN: ['Total liabilities and net worth', '负债和净资产总计'],
+  period: ['For the period from the start to this step', '期间：从起点到本步'], asOf: ['As of this step', '截至本步'],
+};
+const CF_ACTS = { op: ['operating', '一、', '经营'], inv: ['investing', '二、', '投资'], fin: ['financing', '三、', '筹资'] };
+
+function renderStatements() {
+  const showStep = cur >= 1 && cur <= steps.length;
+  const t = totals(Math.min(cur, steps.length)), p = totals(showStep ? cur - 1 : Math.min(cur, steps.length));
+  const dv = (a, b) => (a || 0) - (b || 0);
+  const sum = (o, keys) => keys.reduce((s, k) => s + (o[k] || 0), 0);
+
+  // Income statement: expenses are listed as positive amounts and subtracted, as in a 10-K.
+  const is = stmtTable();
+  for (const [g, term, title, total] of [['inc', 'income', SL.income, SL.totalIncome], ['exp', 'expense', SL.expenses, SL.totalExpenses]]) {
+    const keys = Object.keys(IS_LINES).filter(k => IS_LINES[k][0] === g && k in t.is), sg = g === 'exp' ? -1 : 1;
+    is.head(T(term, L(title)));
+    if (!keys.length) is.empty();
+    for (const k of keys) is.line(L(IS_LINES[k][1]), sg * t.is[k], sg * dv(t.is[k], p.is[k]), '', g === 'exp');
+    is.line(L(total), sg * sum(t.is, keys), sg * (sum(t.is, keys) - sum(p.is, keys)), 't', g === 'exp');
+  }
+  const ni = sumIs(t, ['inc', 'exp']), niP = sumIs(p, ['inc', 'exp']);
+  is.line(T('net-income', L(SL.ni)) + note(L(SL.niNote)), ni, ni - niP, 'g');
+  const mk = Object.keys(IS_LINES).filter(k => IS_LINES[k][0] === 'mkt' && k in t.is);
+  if (mk.length) {
+    is.gap(); is.head(T('market-change', L(SL.oci)));
+    for (const k of mk) is.line(L(IS_LINES[k][1]), t.is[k], dv(t.is[k], p.is[k]));
+    const all = ni + sumIs(t, ['mkt']), allP = niP + sumIs(p, ['mkt']);
+    is.line(T('comprehensive', L(SL.ci)) + note(L(SL.ciNote)), all, all - allP, 'g');
+  }
+
+  // Cash flow statement, direct method: outflows in parentheses, a subtotal per activity.
+  const cf = stmtTable(); let net = 0, netP = 0;
+  for (const g of ['op', 'inv', 'fin']) {
+    const [act, num, zh] = CF_ACTS[g];
+    const keys = Object.keys(CF_LINES).filter(k => CF_LINES[k][0] === g && k in t.cf);
+    cf.head(tx('Cash flows from ' + T(act, act + ' activities'), num + T(act, zh + '活动产生的现金流量')));
+    if (!keys.length) cf.empty();
+    for (const k of keys) cf.line(L(CF_LINES[k][1]), t.cf[k], dv(t.cf[k], p.cf[k]));
+    const sub = sum(t.cf, keys), subP = sum(p.cf, keys);
+    cf.line(tx(`Net cash ${sub < 0 ? 'used in' : 'provided by'} ${act} activities`, `${zh}活动产生的现金流量净额`), sub, sub - subP, 't');
+    net += sub; netP += subP;
+  }
+  cf.gap();
+  cf.line(tx(`Net ${net < 0 ? 'decrease' : 'increase'} in cash`, `四、现金净${net < 0 ? '减少' : '增加'}额`), net, net - netP, 't');
+  cf.line(L(SL.cashBegin), H.checking);
+  cf.line(L(SL.cashEnd), H.checking + net, net - netP, 'g');
+
+  // Balance sheet: assets = liabilities + net worth (equity).
+  const bs = stmtTable();
+  const ta = ASSETS.reduce((s, a) => s + t.bal[a], 0), taP = ASSETS.reduce((s, a) => s + p.bal[a], 0);
+  const tl = LIABS.reduce((s, a) => s + t.bal[a], 0), tlP = LIABS.reduce((s, a) => s + p.bal[a], 0);
+  bs.head(T('asset', L(SL.assets)));
+  for (const a of ASSETS) bs.line(ACCT(a), t.bal[a], t.bal[a] - p.bal[a]);
+  bs.line(L(SL.totalAssets), ta, ta - taP, 'g');
+  bs.gap(); bs.head(T('liability', L(SL.liabs)));
+  for (const a of LIABS) bs.line(ACCT(a), t.bal[a], t.bal[a] - p.bal[a], '', true);
+  bs.line(L(SL.totalLiabs), tl, tl - tlP, 't', true);
+  bs.head(T('net-worth', L(SL.nw)) + note(L(SL.nwNote)));
+  bs.line(L(SL.nwLine), ta - tl, (ta - tl) - (taP - tlP));
+  bs.line(L(SL.totalLN), ta, ta - taP, 'g');
+
+  // Phones show one statement at a time; a yellow dot marks the tabs whose statement just changed.
+  const parts = [['is', 'income-statement', L(SL.period), is.html()], ['cf', 'cash-flow', L(SL.period), cf.html()], ['bs', 'balance-sheet', L(SL.asOf), bs.html()]];
+  const hit = body => body.includes(' hit"');
+  const tabs = parts.map(([k, term, , body]) => `<button data-stab="${k}" class="${k === stab ? 'on' : ''}" style="--c:var(--${k})">${G()[term][0]}${hit(body) ? '<i class="hitdot"></i>' : ''}</button>`).join('');
+  $('#stmts').innerHTML = `<div class="stabs">${tabs}</div>` + parts.map(([k, term, q, body]) =>
+    `<div class="card stmt${k === stab ? ' on' : ''}" data-k="${k}"><h3><i style="background:var(--${k})"></i>${T(term, G()[term][0])}</h3><div class="q">${q}</div>${body}</div>`).join('');
+}
+function renderStepper() {
+  const n = last();
+  let h = '';
+  for (let i = 0; i <= n; i++) h += `<button class="dot ${i === cur ? 'cur' : i < cur ? 'done' : ''}" data-step="${i}" title="${i === 0 ? tx('Start', '起点') : i === n ? tx('Wrap-up', '总结') : steps[i - 1].title}">${i === 0 ? '●' : i === n ? '✓' : i}</button>`;
+  $('#dots').innerHTML = h;
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === n;
+  $('#next').textContent = cur === n - 1 ? U('wrapBtn') : U('next');
+  $('#numsBtn').disabled = !scen.params.length;
+  $('#pos').textContent = cur === 0 ? tx('Start', '起点') : cur === n ? tx('Wrap-up', '总结') : tx(`Step ${cur} of ${n - 1}`, `第 ${cur} / ${n - 1} 步`);
+}
+function render() { hideTip(); renderStepper(); renderStory(); renderLedger(); renderStatements(); }
+const phone = () => typeof window.matchMedia === 'function' && window.matchMedia('(max-width:700px)').matches;
+// nav = moved by Back/Next: on a phone, bring the new event into view (the page reads top-down).
+function go(i, nav) {
+  cur = Math.max(0, Math.min(last(), i)); render();
+  if (nav && phone() && $('#story').getBoundingClientRect().top < 0) $('#story').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ---------- language switch ----------
+// Fixed text (elements with data-t), the scenario menu, <html lang> and the title.
+function applyLang() {
+  document.documentElement.lang = tx('en', 'zh-CN');
+  document.title = U('title');
+  document.querySelectorAll('[data-t]').forEach(el => { const v = U(el.dataset.t); el.innerHTML = typeof v === 'function' ? v() : v; });
+  $('#scen').innerHTML = SCENARIOS.map(s => `<option value="${s.id}"${s === scen ? ' selected' : ''}>${L(s.name)}</option>`).join('');
+  $('#lang').value = LANG;
+}
+function setLang(l) {
+  if (!LANGS.includes(l)) return;
+  LANG = l;
+  localStorage.setItem('learn-lang', l);
+  const u = new URL(location.href); u.searchParams.set('lang', l);
+  history.replaceState(null, '', u);
+  applyLang(); build(); go(Math.min(cur, last()));
+}
+
+// ---------- tooltip ----------
+const tip = () => $('#tip');
+let tipFor = null;
+function showTip(el) {
+  if (tipFor === el) { hideTip(); return; }
+  const [title, body] = G()[el.dataset.term] || [el.textContent, ''];
+  const t = tip();
+  t.innerHTML = `<span class="x">✕</span><b>${title}</b>${body}`;
+  t.hidden = false;
+  const r = el.getBoundingClientRect(), w = Math.min(340, window.innerWidth - 16);
+  let left = r.left + window.scrollX + r.width / 2 - 24;
+  left = Math.max(8, Math.min(left, window.scrollX + window.innerWidth - w - 8));
+  t.style.left = left + 'px'; t.style.top = (r.bottom + window.scrollY + 8) + 'px';
+  t.style.setProperty('--ax', Math.max(8, r.left + window.scrollX + r.width / 2 - left - 6) + 'px');
+  tipFor = el;
+}
+function hideTip() { const t = tip(); if (t) t.hidden = true; tipFor = null; }
+
+// ---------- dialogs ----------
+function formHtml(groups, values) {
+  return groups.map(([g, fs]) => (g ? `<h4>${L(g)}</h4>` : '') + fs.map(([k, l]) => `<label for="f-${k}">${L(l)}</label><input type="number" step="any" id="f-${k}" data-k="${k}" value="${values[k]}">`).join('')).join('');
+}
+function readForm(sel, target) { document.querySelectorAll(sel + ' input').forEach(i => { if (i.value !== '' && !isNaN(+i.value)) target[i.dataset.k] = +i.value; }); }
+
+function init() {
+  applyLang();
+  $('#lang').onchange = e => setLang(e.target.value);
+  $('#scen').onchange = e => { scen = SCENARIOS.find(s => s.id === e.target.value); build(); go(0); };
+  $('#prev').onclick = () => go(cur - 1, true);
+  $('#next').onclick = () => go(cur + 1, true);
+  $('#stmts').onclick = e => {
+    const b = e.target.closest('[data-stab]'); if (!b) return;
+    stab = b.dataset.stab;
+    document.querySelectorAll('#stmts [data-stab], #stmts .stmt').forEach(el => el.classList.toggle('on', (el.dataset.stab || el.dataset.k) === stab));
+  };
+  $('#ledger').onclick = e => { const r = e.target.closest('tr.old'); if (r && !e.target.closest('.term')) r.classList.toggle('open'); };
+  $('#dots').onclick = e => { const b = e.target.closest('[data-step]'); if (b) go(+b.dataset.step); };
+  $('#howBtn').onclick = () => $('#howDlg').showModal();
+  $('#houseBtn').onclick = () => { $('#houseForm').innerHTML = formHtml(HOUSE_FIELDS, H); $('#houseDlg').showModal(); };
+  $('#houseDlg').addEventListener('close', () => {
+    const v = $('#houseDlg').returnValue;
+    if (v === 'ok') readForm('#houseForm', H); else if (v === 'reset') H = { ...HOUSE_DEFAULT }; else return;
+    build(); go(Math.min(cur, last()));
+  });
+  $('#numsBtn').onclick = () => { $('#numsTitle').textContent = U('numbers')(L(scen.name)); $('#numsForm').innerHTML = formHtml([['', scen.params]], paramsOf(scen)); $('#numsDlg').showModal(); };
+  $('#numsDlg').addEventListener('close', () => { if ($('#numsDlg').returnValue === 'ok') { readForm('#numsForm', paramsOf(scen)); build(); go(Math.min(cur, last())); } });
+  document.addEventListener('click', e => {
+    const term = e.target.closest('.term');
+    if (term) { e.preventDefault(); showTip(term); return; }
+    if (!e.target.closest('#tip') || e.target.closest('.x')) hideTip();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') hideTip();
+    if (document.querySelector('dialog[open]') || e.target.matches('input,select')) return;
+    if (e.key === 'ArrowRight') go(cur + 1);
+    if (e.key === 'ArrowLeft') go(cur - 1);
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('term')) { e.preventDefault(); showTip(e.target); }
+  });
+  build(); go(0);
+  if (!localStorage.getItem('hf-seen-how')) { localStorage.setItem('hf-seen-how', '1'); $('#howDlg').showModal(); }
+}
+if (typeof module !== 'undefined') module.exports = { SCENARIOS, HOUSE_DEFAULT, check, nwOf };
+else init();
+</script>
+</body>
+</html>
