@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How a Liuyao hexagram is cast · 六爻是怎么起卦装卦的</title>
+<meta name="description" content="An interactive, bilingual lesson: toss three coins six times, then set up a Liuyao (six-line) chart step by step as in the Zengshan Buyi — palace, world and response, Najia, six relatives, hidden spirits, changed lines, month and day.">
+<style>
+*{box-sizing:border-box}
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1f2633;--mute:#6b7280;--line:#e5e7eb;--acc:#2563eb;--hl:#fff4c2;--ok:#059669;--bad:#dc2626;--c1:#7c3aed;--c2:#0d9488;--c3:#d97706;--c4:#2563eb}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+.top{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.top h1{font-size:18px;margin:0 auto 0 0;line-height:1.3}
+.top a.home{text-decoration:none;color:var(--mute);font-size:20px;line-height:1}
+select,.btn,input[type=datetime-local],input[type=text]{font:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+.btn{cursor:pointer}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.btn:disabled{opacity:.4;cursor:default}
+main{max-width:1180px;margin:0 auto;padding:16px 20px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+.stepper{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.dots{display:flex;gap:7px;flex-wrap:wrap;flex:1;align-items:center}
+.dot{width:12px;height:12px;border-radius:50%;background:#d1d5db;border:0;padding:0;cursor:pointer}
+.dot.done{background:#93c5fd}.dot.cur{background:var(--acc);transform:scale(1.35)}
+.dot:disabled{cursor:default;opacity:.5}
+.kbd{color:var(--mute);font-size:12.5px}
+.story .n{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.story h2{margin:4px 0 8px;font-size:22px;line-height:1.3}
+.story p{margin:8px 0}
+.tip-box{background:#eff6ff;border-left:4px solid var(--acc);border-radius:8px;padding:10px 14px;margin-top:10px}
+.kw{background:#fffbeb;border:1px solid #fcd34d;border-radius:5px;padding:0 5px;font-weight:700;white-space:nowrap}
+.sec-title{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin-bottom:8px}
+.none{color:#9ca3af;font-style:italic;font-size:14px}
+.ok{color:var(--ok);font-weight:800;margin-right:4px}
+.bad{color:var(--bad);font-weight:800;margin-right:4px}
+/* ---------- start ---------- */
+.hero{text-align:center;padding:30px 18px 26px}
+.hero h2{font-size:26px;margin:0 0 8px}
+.hero p{max-width:640px;margin:8px auto;color:#374151}
+.qin{width:min(480px,100%);font-size:16px!important;padding:10px 12px!important;margin:10px auto 0;display:block}
+.clock{font-variant-numeric:tabular-nums;font-size:40px;font-weight:800;margin:16px 0 4px}
+.clock small{display:block;font-size:15px;font-weight:500;color:var(--mute)}
+.go-btn{font:inherit;font-size:20px;font-weight:700;padding:14px 34px;border-radius:999px;border:0;background:var(--acc);color:#fff;cursor:pointer;margin:14px 0 6px;box-shadow:0 8px 22px rgba(37,99,235,.3)}
+.go-btn:active{transform:scale(.97)}
+.alt{margin-top:14px;color:var(--mute);font-size:14px;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+.locked{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:14px}
+.locked .sp{flex:1}
+.locked .q{font-weight:700}
+/* ---------- coins ---------- */
+.coins{display:flex;gap:18px;justify-content:center;margin:14px 0 6px}
+.coin{width:74px;text-align:center;font-size:13px;color:var(--mute)}
+.coin .face{width:68px;height:68px;margin:0 auto 4px;border-radius:50%;position:relative;border:3px solid #a16207;background:radial-gradient(circle at 35% 30%,#fde68a,#d4a017 70%);box-shadow:inset 0 0 0 5px rgba(161,98,7,.35)}
+.coin .face::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;background:#fff;border:2px solid #a16207}
+.coin .face b{position:absolute;font-size:13px;color:#713f12;font-weight:800}
+.coin .face b:nth-child(1){left:50%;top:5px;transform:translateX(-50%)}.coin .face b:nth-child(2){left:50%;bottom:5px;transform:translateX(-50%)}
+.coin .face b:nth-child(3){left:7px;top:50%;transform:translateY(-50%)}.coin .face b:nth-child(4){right:7px;top:50%;transform:translateY(-50%)}
+.coin.back .face{background:radial-gradient(circle at 35% 30%,#e7e5e4,#a8a29e 70%);border-color:#57534e;box-shadow:inset 0 0 0 5px rgba(87,83,78,.3)}
+.coin.back .face::after{border-color:#57534e}
+.coin.blank .face{background:#f1f5f9;border:3px dashed #cbd5e1;box-shadow:none}.coin.blank .face::after{display:none}
+.coin.spin .face{animation:flip .7s ease}
+.coin span{font-weight:700;color:var(--ink)}
+.tossbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+.manual{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px;font-size:13px;color:var(--mute);align-items:center}
+.manual button{font:inherit;font-size:13px;padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:#f9fafb;cursor:pointer}
+.manual button:hover{border-color:var(--acc);color:var(--acc)}
+.result{text-align:center;font-weight:700;min-height:1.6em}
+@keyframes flip{0%{transform:rotateY(0) translateY(0)}40%{transform:rotateY(540deg) translateY(-26px)}100%{transform:rotateY(1080deg) translateY(0)}}
+/* ---------- layout ---------- */
+.panels{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;align-items:start}
+.panel{border-top:4px solid var(--c);margin-bottom:0}
+@media (max-width:900px){.panels{grid-template-columns:1fr}}
+/* ---------- the chart ---------- */
+.ghead{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;margin-bottom:8px}
+.ghead .nm{font-size:20px;font-weight:800}
+.ghead .sub{font-size:13px;color:var(--mute)}
+.ghead .to{font-size:20px;font-weight:800;color:var(--c3)}
+.gtime{font-size:13px;color:#374151;background:#f9fafb;border:1px solid var(--line);border-radius:8px;padding:5px 9px;margin-bottom:8px}
+table.gua{border-collapse:collapse;width:100%;font-size:14px}
+.gwrap{overflow-x:auto}
+.gua td{padding:7px 3px;border-bottom:1px solid #f1f5f9;white-space:nowrap;vertical-align:middle;text-align:center}
+.gua th{font-size:11px;color:var(--mute);font-weight:600;padding:2px 3px;text-align:center}
+.gua tr.hl td{background:var(--hl)}
+.gua .pos{color:var(--mute);font-size:12px}
+.gua .sh{color:var(--c4);font-weight:700}
+.gua .fu{color:#64748b;font-size:12.5px}
+.gua .rel{color:var(--c1);font-weight:700}
+.gua .gz{font-weight:700;color:var(--c2)}
+.gua .gz small{color:var(--mute);font-weight:500}
+.gua .sy b{display:inline-block;width:22px;height:22px;line-height:22px;border-radius:50%;color:#fff;font-size:12px}
+.gua .sy b.s{background:#b91c1c}.gua .sy b.y{background:#475569}
+.gua .mv{color:#b91c1c;font-weight:800;font-size:16px}
+.gua .bv{color:var(--c3);font-weight:700}
+.gua .mk i{font-style:normal;display:inline-block;border-radius:4px;padding:0 4px;margin-left:2px;color:#fff;font-size:11px;font-weight:700}
+.mk .k{background:#64748b}.mk .p{background:#be123c}
+.bar{display:inline-flex;width:58px;height:12px;gap:10px;vertical-align:middle}
+.bar i{flex:1;background:#1f2633;border-radius:2px}
+.bar.mv i{background:#b91c1c}
+.bar.bian i{background:var(--c3)}
+.bar.ghost i{background:#e5e7eb}
+.new{animation:pop .5s ease both}
+@keyframes pop{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:none}}
+.legendrow{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:center;margin-top:10px;font-size:12.5px;color:var(--mute)}
+.legendrow b{font-weight:800}
+/* ---------- work panel ---------- */
+table.t{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0}
+.t th,.t td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:middle}
+.t th{font-size:12px;color:var(--mute);font-weight:600}
+.t tr.on td{background:var(--hl);font-weight:700}
+.t td.on{background:#fde68a;font-weight:800}
+.cmp{font-size:14px;margin:8px 0;padding:8px 10px;background:#f9fafb;border-radius:8px;border:1px solid var(--line)}
+.mini{display:inline-flex;flex-direction:column-reverse;gap:2px;vertical-align:middle;width:26px}
+.mini i{display:flex;gap:4px;height:4px}.mini i::before,.mini i::after{content:"";flex:1;background:#1f2633;border-radius:1px}
+.mini i.y::before{flex:2}.mini i.y::after{display:none}
+.mini i.f::before,.mini i.f::after{background:#b91c1c}
+.verse{font-size:13px;color:#374151;background:#fafaf9;border:1px dashed #d6d3d1;border-radius:8px;padding:8px 10px;margin:8px 0;line-height:1.7}
+/* ---------- glossary & dialog ---------- */
+.term{border-bottom:1.5px dotted #6b7280;cursor:help}
+.term:hover{color:var(--acc);border-bottom-color:var(--acc)}
+#tip{position:absolute;z-index:50;max-width:340px;background:#1f2633;color:#fff;border-radius:10px;padding:10px 26px 10px 14px;font-size:13.5px;line-height:1.45;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#tip b{display:block;margin-bottom:3px;font-size:14px}
+#tip::before{content:"";position:absolute;top:-6px;left:var(--ax,20px);border:6px solid transparent;border-top:0;border-bottom-color:#1f2633}
+#tip .x{position:absolute;right:9px;top:5px;cursor:pointer;opacity:.7}
+dialog{border:none;border-radius:14px;padding:0;width:min(560px,92vw);box-shadow:0 20px 50px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(15,23,42,.45)}
+.dlg-h{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:16px}
+.dlg-b{padding:14px 18px;max-height:65vh;overflow:auto}
+.dlg-b p{margin:8px 0}
+.dlg-f{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+select.lang{min-width:0}
+.pos-m{display:none}
+[hidden]{display:none!important}
+/* ---------- phones ---------- */
+@media (max-width:700px){
+  body{font-size:16px}
+  .top{position:static;padding:10px 12px;gap:8px}
+  .top h1{font-size:16px;flex:1 1 0;min-width:0;margin:0}
+  select{font-size:16px}
+  main{padding:12px 10px calc(90px + env(safe-area-inset-bottom))}
+  .card{padding:14px}
+  .stepper{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.07);padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+  .stepper .btn{flex:1;padding:13px 8px;font-size:17px;border-radius:10px}
+  .dots,.stepper .kbd{display:none}
+  .pos-m{display:block;font-size:14px;color:var(--mute);white-space:nowrap;text-align:center}
+  .story h2{font-size:20px}
+  .clock{font-size:34px}
+  .coins{gap:10px}
+  .card.panel.chart{padding:12px 6px}
+  .gua{font-size:12.5px}
+  .gua td{padding:6px 1px}
+  .gua .pos{font-size:11px}
+  .gua .fu{font-size:11px}
+  .bar{width:32px;gap:5px;height:9px}
+  .gua .fu,.gua .bv{white-space:normal;line-height:1.15;max-width:4.2em}
+  .gua .mk i{padding:0 2px;font-size:10px}
+  .gua th{font-size:10px;padding:2px 1px}
+  .gua .sy b{width:19px;height:19px;line-height:19px;font-size:11px}
+  #tip{font-size:15px}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="home" href="../" title="All lessons / 全部课程">⌂</a>
+  <h1 data-t="h1"></h1>
+  <button class="btn" id="howBtn" data-t="how"></button>
+  <select id="lang" class="lang" aria-label="Language / 语言"><option value="en">🌐 English</option><option value="zh">🌐 简体中文</option></select>
+</div>
+<main>
+  <section id="startView" class="card hero">
+    <h2 data-t="heroTitle"></h2>
+    <p data-t="heroText"></p>
+    <input type="text" id="qText" class="qin" maxlength="60" autocomplete="off">
+    <div class="clock" id="clock"></div>
+    <button class="go-btn" id="goBtn" data-t="goBtn"></button>
+    <div class="alt"><span data-t="orPick"></span><input type="datetime-local" id="pickT"><button class="btn" id="pickBtn" data-t="usePick"></button></div>
+  </section>
+  <section id="lessonView" hidden>
+    <div class="card locked" id="locked"></div>
+    <div class="stepper">
+      <button class="btn" id="prev" data-t="prev"></button>
+      <div class="dots" id="dots"></div>
+      <span class="kbd" data-t="keys"></span>
+      <span class="pos-m" id="pos"></span>
+      <button class="btn primary" id="next"></button>
+    </div>
+    <div class="card story" id="story"></div>
+    <div class="panels">
+      <div class="card panel chart" style="--c:var(--c1)"><div class="sec-title" data-t="boardTitle"></div><div id="board"></div></div>
+      <div class="card panel" style="--c:var(--c3)"><div class="sec-title" data-t="workTitle"></div><div id="work"></div></div>
+    </div>
+  </section>
+</main>
+
+<div id="tip" hidden></div>
+
+<dialog id="howDlg"><form method="dialog">
+  <div class="dlg-h" data-t="howTitle"></div>
+  <div class="dlg-b" data-t="howBody"></div>
+  <div class="dlg-f"><button class="btn primary" value="ok" data-t="gotIt"></button></div>
+</form></dialog>
+
+<script>
+'use strict';
+// ---------- language ----------
+const HAS_DOM = typeof document !== 'undefined';
+let LANG = (() => {
+  if (!HAS_DOM) return 'zh';
+  const q = new URLSearchParams(location.search).get('lang');
+  if (q === 'en' || q === 'zh') return q;
+  try { const s = localStorage.getItem('learn-lang'); if (s === 'en' || s === 'zh') return s; } catch (e) {}
+  return /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
+})();
+const isZh = () => LANG === 'zh';
+const tx = (en, zh) => isZh() ? zh : en;
+const L = a => a[isZh() ? 1 : 0];
+// Keep the address bar in step with the page. Browsers refuse this for a file opened from disk (file://), so failures are ignored.
+const setUrl = u => { try { history.replaceState(null, '', u); } catch (e) {} };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const kw = s => `<span class="kw">${s}</span>`;
+const mod = (a, n) => ((a % n) + n) % n;
+const pad = n => String(n).padStart(2, '0');
+
+// ---------- fixed tables ----------
+const STEMS = '甲乙丙丁戊己庚辛壬癸', BRANCHES = '子丑寅卯辰巳午未申酉戌亥';
+const GZ = i => STEMS[i % 10] + BRANCHES[i % 12];
+// Five phases, in the order each one produces the next: wood → fire → earth → metal → water → wood
+const WX = '木火土金水', WX_EN = ['Wood', 'Fire', 'Earth', 'Metal', 'Water'];
+const BR_WX = [4, 2, 0, 0, 2, 1, 1, 2, 3, 3, 2, 4];   // 子水 丑土 寅木 卯木 辰土 巳火 午火 未土 申金 酉金 戌土 亥水
+// Trigrams, lines listed bottom → top (1 = yang)
+const TRI = [
+  { n: '乾', img: '天', en: 'Heaven', bits: [1, 1, 1], wx: 3 }, { n: '兑', img: '泽', en: 'Lake', bits: [1, 1, 0], wx: 3 },
+  { n: '离', img: '火', en: 'Fire', bits: [1, 0, 1], wx: 1 }, { n: '震', img: '雷', en: 'Thunder', bits: [1, 0, 0], wx: 0 },
+  { n: '巽', img: '风', en: 'Wind', bits: [0, 1, 1], wx: 0 }, { n: '坎', img: '水', en: 'Water', bits: [0, 1, 0], wx: 4 },
+  { n: '艮', img: '山', en: 'Mountain', bits: [0, 0, 1], wx: 2 }, { n: '坤', img: '地', en: 'Earth', bits: [0, 0, 0], wx: 2 }];
+const triOf = b => TRI.findIndex(t => t.bits.join('') === b.join(''));
+// Najia: [inner lines 1-3, outer lines 4-6]
+const NAJIA = {
+  乾: ['甲子', '甲寅', '甲辰', '壬午', '壬申', '壬戌'], 兑: ['丁巳', '丁卯', '丁丑', '丁亥', '丁酉', '丁未'],
+  离: ['己卯', '己丑', '己亥', '己酉', '己未', '己巳'], 震: ['庚子', '庚寅', '庚辰', '庚午', '庚申', '庚戌'],
+  巽: ['辛丑', '辛亥', '辛酉', '辛未', '辛巳', '辛卯'], 坎: ['戊寅', '戊辰', '戊午', '戊申', '戊戌', '戊子'],
+  艮: ['丙辰', '丙午', '丙申', '丙戌', '丙子', '丙寅'], 坤: ['乙未', '乙巳', '乙卯', '癸丑', '癸亥', '癸酉'] };
+// The eight palaces, in the order of the Jingfang palace verse; names in generation order
+const PALACES = [
+  ['乾', '乾为天 天风姤 天山遁 天地否 风地观 山地剥 火地晋 火天大有'], ['坎', '坎为水 水泽节 水雷屯 水火既济 泽火革 雷火丰 地火明夷 地水师'],
+  ['艮', '艮为山 山火贲 山天大畜 山泽损 火泽睽 天泽履 风泽中孚 风山渐'], ['震', '震为雷 雷地豫 雷水解 雷风恒 地风升 水风井 泽风大过 泽雷随'],
+  ['巽', '巽为风 风天小畜 风火家人 风雷益 天雷无妄 火雷噬嗑 山雷颐 山风蛊'], ['离', '离为火 火山旅 火风鼎 火水未济 山水蒙 风水涣 天水讼 天火同人'],
+  ['坤', '坤为地 地雷复 地泽临 地天泰 雷天大壮 泽天夬 水天需 水地比'], ['兑', '兑为泽 泽水困 泽地萃 泽山咸 水山蹇 地山谦 雷山小过 雷泽归妹']];
+const GEN = [['Pure', '八纯'], ['1st gen', '一世'], ['2nd gen', '二世'], ['3rd gen', '三世'], ['4th gen', '四世'], ['5th gen', '五世'], ['Wandering soul', '游魂'], ['Returning soul', '归魂']];
+const SHI = [6, 1, 2, 3, 4, 5, 4, 3];
+const REL = ['兄弟', '子孙', '妻财', '官鬼', '父母'];
+const REL_EN = ['Siblings', 'Offspring', 'Wealth', 'Officer', 'Parents'];
+const REL_WHY = [['same as me', '同我'], ['I produce', '我生'], ['I overcome', '我克'], ['overcomes me', '克我'], ['produces me', '生我']];
+const SHEN = ['青龙', '朱雀', '勾陈', '螣蛇', '白虎', '玄武'];
+const SHEN_EN = ['Green Dragon', 'Red Bird', 'Hook', 'Flying Snake', 'White Tiger', 'Black Tortoise'];
+const SHEN_START = [0, 0, 1, 1, 2, 3, 4, 4, 5, 5];   // by day stem
+const POS = [['1st', '初'], ['2nd', '二'], ['3rd', '三'], ['4th', '四'], ['5th', '五'], ['Top', '上']];
+const TOSS = { 6: ['Old yin', '老阴', '交', '×'], 7: ['Young yang', '少阳', '单', ''], 8: ['Young yin', '少阴', '拆', ''], 9: ['Old yang', '老阳', '重', '○'] };
+
+// Build the 64-hexagram table from the palace rule: flip lines 1–5 one by one, then line 4 back (wandering), then the lower trigram back (returning).
+const HEX = {};   // key: 6 bits bottom→top → {name, pal, gen}
+PALACES.forEach(([p, names]) => {
+  const t = TRI[triOf(TRI.find(x => x.n === p).bits)], nm = names.split(' ');
+  let h = [...t.bits, ...t.bits];
+  const put = g => { HEX[h.join('')] = { name: nm[g], pal: p, gen: g, flip: null }; };
+  put(0);
+  for (let g = 1; g <= 5; g++) { h = [...h]; h[g - 1] ^= 1; put(g); HEX[h.join('')].flip = g; }
+  h = [...h]; h[3] ^= 1; put(6); HEX[h.join('')].flip = 4;
+  h = [...t.bits, ...h.slice(3)]; put(7); HEX[h.join('')].flip = -1;
+});
+const palaceList = p => { const out = []; for (const k in HEX) if (HEX[k].pal === p) out.push([k, HEX[k]]); return out.sort((a, b) => a[1].gen - b[1].gen); };
+
+// ---------- calendar (same method as the Qimen lesson) ----------
+const RAD = Math.PI / 180;
+const jdOf = ms => ms / 864e5 + 2440587.5 + 69 / 86400;
+function sunLon(ms) {
+  const T = (jdOf(ms) - 2451545) / 36525;
+  const L0 = 280.46646 + 36000.76983 * T + 0.0003032 * T * T;
+  const M = (357.52911 + 35999.05029 * T - 0.0001537 * T * T) * RAD;
+  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(M) + (0.019993 - 0.000101 * T) * Math.sin(2 * M) + 0.000289 * Math.sin(3 * M);
+  const Om = (125.04 - 1934.136 * T) * RAD;
+  return mod(L0 + C - 0.00569 - 0.00478 * Math.sin(Om), 360);
+}
+function findCross(target, ms) { for (let i = 0; i < 8; i++) ms += (mod(target - sunLon(ms) + 180, 360) - 180) / 360 * 365.2422 * 864e5; return ms; }
+const JIE = ['立春', '惊蛰', '清明', '立夏', '芒种', '小暑', '立秋', '白露', '寒露', '立冬', '大雪', '小寒'];
+function calendar(ms) {
+  const dt = new Date(ms), Y = dt.getFullYear(), M = dt.getMonth() + 1, D = dt.getDate(), h = dt.getHours();
+  const lon = sunLon(ms), mo = Math.floor(mod(lon - 315, 360) / 30);
+  const c = { ms, lon, mo, monthBr: (2 + mo) % 12, jie: JIE[mo], jieAt: findCross(315 + 30 * mo, ms), rolled: h >= 23 };
+  const lichun = findCross(315, new Date(Y, 1, 4, 12).getTime()), yr = ms >= lichun ? Y : Y - 1, yearStem = mod(yr - 4, 10);
+  c.monthIdx = idxOf(mod(yearStem % 5 * 2 + 2 + mo, 10), c.monthBr);
+  c.days = Math.round((Date.UTC(Y, M - 1, D) + (c.rolled ? 864e5 : 0) - Date.UTC(2000, 0, 1)) / 864e5);
+  c.dayIdx = mod(54 + c.days, 60);
+  c.xun = Math.floor(c.dayIdx / 10);
+  c.kong = [mod(c.xun * 10 + 10, 12), mod(c.xun * 10 + 11, 12)];
+  c.po = (c.monthBr + 6) % 12;
+  return c;
+}
+function idxOf(s, b) { for (let i = 0; i < 60; i++) if (i % 10 === s && i % 12 === b) return i; return -1; }
+
+// ---------- setting up the chart (pure) ----------
+// tosses: six numbers 6/7/8/9, first toss = bottom line
+function setup(tosses, ms) {
+  const g = { tosses, cal: calendar(ms) };
+  g.bits = tosses.map(v => v % 2);               // 7, 9 → yang
+  g.moving = tosses.map(v => v === 6 || v === 9);
+  g.bianBits = g.bits.map((b, i) => g.moving[i] ? 1 - b : b);
+  g.hasMove = g.moving.some(Boolean);
+  if (tosses.length < 6) return g;               // still tossing
+  const info = bits => { const lo = triOf(bits.slice(0, 3)), up = triOf(bits.slice(3)); return { lo, up, ...HEX[bits.join('')] }; };
+  g.ben = info(g.bits); g.bian = info(g.bianBits);
+  g.palTri = TRI.find(t => t.n === g.ben.pal);
+  g.palWx = g.palTri.wx;
+  g.shi = SHI[g.ben.gen]; g.ying = g.shi > 3 ? g.shi - 3 : g.shi + 3;
+  const najia = (lo, up) => [...NAJIA[TRI[lo].n].slice(0, 3), ...NAJIA[TRI[up].n].slice(3)];
+  const relOf = gz => mod(BR_WX[BRANCHES.indexOf(gz[1])] - g.palWx, 5);
+  g.lines = najia(g.ben.lo, g.ben.up).map((gz, i) => ({ gz, br: BRANCHES.indexOf(gz[1]), wx: BR_WX[BRANCHES.indexOf(gz[1])], rel: relOf(gz) }));
+  g.bianLines = najia(g.bian.lo, g.bian.up).map((gz, i) => ({ gz, br: BRANCHES.indexOf(gz[1]), wx: BR_WX[BRANCHES.indexOf(gz[1])], rel: relOf(gz) }));
+  // hidden spirits: a relative missing from this hexagram is borrowed from the pure hexagram of its palace, at the same line
+  const pureT = TRI.indexOf(g.palTri);
+  g.pure = najia(pureT, pureT).map(gz => ({ gz, rel: relOf(gz), wx: BR_WX[BRANCHES.indexOf(gz[1])] }));
+  g.present = new Set(g.lines.map(l => l.rel));
+  g.missing = [0, 1, 2, 3, 4].filter(r => !g.present.has(r));
+  g.fu = g.pure.map(p => g.missing.includes(p.rel) ? p : null);
+  g.shenStart = SHEN_START[g.cal.dayIdx % 10];
+  g.shen = [0, 1, 2, 3, 4, 5].map(i => (g.shenStart + i) % 6);
+  return g;
+}
+
+// ---------- formatting ----------
+function fmt(ms, sec) { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}${sec ? ':' + pad(d.getSeconds()) : ''}`; }
+const tzStr = m => `UTC${m >= 0 ? '+' : '−'}${Math.floor(Math.abs(m) / 60)}${Math.abs(m) % 60 ? ':' + pad(Math.abs(m) % 60) : ''}`;
+const nRel = r => isZh() ? REL[r] : `${REL[r]} <small>${REL_EN[r]}</small>`;
+const nShen = s => isZh() ? SHEN[s] : `${SHEN[s]} (${SHEN_EN[s]})`;
+const nHex = x => isZh() ? x.name : `${x.name} <span style="font-weight:500;color:var(--mute)">(${TRI[x.up].en} over ${TRI[x.lo].en})</span>`;
+const nTri = t => isZh() ? `${TRI[t].n}（${TRI[t].img}）` : `${TRI[t].n} ${TRI[t].en}`;
+const nWx = w => isZh() ? WX[w] : `${WX[w]} ${WX_EN[w]}`;
+const nPos = i => isZh() ? `${POS[i][1]}爻` : `${POS[i][0]} line`;
+const gzw = l => `${l.gz[1]}${WX[l.wx]}`;
+const mini = (bits, flips) => `<span class="mini">${bits.map((b, i) => `<i class="${b ? 'y' : ''}${flips && flips.includes(i) ? ' f' : ''}"></i>`).join('')}</span>`;
+const bar = (b, cls) => `<span class="bar ${cls || ''}">${b ? '<i></i>' : '<i></i><i></i>'}</span>`;
+
+// ---------- UI text ----------
+const UI = {
+  h1: ['How a Liuyao hexagram is cast', '六爻是怎么起卦装卦的'],
+  how: ['? How to read this', '? 怎么看这一页'],
+  prev: ['← Back', '← 上一步'],
+  keys: ['← → keys work too', '也可以用 ← → 键'],
+  boardTitle: ['The chart', '卦盘'],
+  workTitle: ['How this step is worked out', '这一步是怎么算的'],
+  heroTitle: ['Toss the coins, then set up the chart yourself', '亲手摇卦，一步一步装卦'],
+  heroText: ['This follows the coin method and the Najia set-up taught in the <i>Zengshan Buyi</i> (增删卜易) by the Old Man of the Wild Crane (野鹤老人). Think of one clear question. The moment you press start is locked in, since the month and day of the casting matter later. Then toss three coins six times and watch the chart being built, one rule at a time.',
+    '这一课按野鹤老人《增删卜易》里的“以钱代蓍”和纳甲装卦来讲。先想好一件清楚的事。按下开始的那一刻会被锁定，因为后面要用到起卦时的月建和日辰。然后摇六次钱，一条规则一条规则地看卦是怎么装出来的。'],
+  qPh: ['Your question (optional, stays on this device)', '所问之事（可不填，只留在你的设备上）'],
+  goBtn: ['Start · lock this moment', '开始 · 锁定此刻'],
+  orPick: ['or pick a moment:', '或者选一个时间：'],
+  usePick: ['Use it', '用这个时间'],
+  howTitle: ['How to read this page', '怎么看这一页'],
+  gotIt: ['Got it', '知道了'],
+  howBody: [`<p>First you toss three coins six times; each toss makes one line, from the bottom up. Then press <b>Next</b> to set up the chart one step at a time. Each step adds one column to the chart on the left and shows the working on the right (below on a phone).</p>
+<p>Columns of the finished chart, left to right: <b style="color:var(--c4)">six spirits</b> · hidden spirit · <b style="color:var(--c1)">six relatives</b> · <b style="color:var(--c2)">branch and phase</b> · the line · <b style="color:#b91c1c">世</b> world / <b style="color:#475569">应</b> response · moving mark · <b style="color:var(--c3)">changed line</b>.</p>
+<p>Tap any <span class="term" data-term="dotted" tabindex="0">underlined word</span> to see what it means.</p>`,
+    `<p>先摇六次钱，每次得一爻，从下往上排。然后按<b>下一步</b>一步一步装卦。每一步给左边的卦盘加一列，右边（手机上在下面）列出计算过程。</p>
+<p>装好的卦从左到右是：<b style="color:var(--c4)">六神</b> · 伏神 · <b style="color:var(--c1)">六亲</b> · <b style="color:var(--c2)">地支五行</b> · 爻 · <b style="color:#b91c1c">世</b>/<b style="color:#475569">应</b> · 动爻记号 · <b style="color:var(--c3)">变爻</b>。</p>
+<p>点击任何<span class="term" data-term="dotted" tabindex="0">带下划线的词</span>查看它的意思。</p>`],
+};
+const U = k => L(UI[k]);
+
+// ---------- glossary ----------
+const GLOSS = {
+  en: {
+    dotted: ['Like this', 'Tap any underlined word to see what it means. Tap anywhere else or press Esc to close.'],
+    yiqian: ['Coins for yarrow (以钱代蓍)', 'The old way to cast used 50 yarrow stalks and took a long time. Three coins give the same four kinds of line in one toss.'],
+    zibei: ['Face and back (字 / 背)', 'The face of an old coin carries characters (字); the back (背) does not. Here face = 2 and back = 3. Some teachers swap them; the lines come out the other way round.'],
+    yao: ['Line (爻)', 'One of the six lines of a hexagram: solid (yang) or broken (yin). Counted from the bottom: 初 (1st), 二, 三, 四, 五, 上 (top).'],
+    dong: ['Moving line (动爻)', 'An “old” line (9 or 6) is at its extreme and turns into its opposite. It drives the change in the reading.'],
+    bengua: ['Main hexagram (本卦)', 'The hexagram made by the six tosses: the situation now.'],
+    biangua: ['Changed hexagram (变卦)', 'The main hexagram with every moving line flipped: where the moving lines lead.'],
+    gong: ['Eight palaces (八宫)', 'Jing Fang’s way of grouping the 64 hexagrams into 8 families of 8, each headed by a doubled trigram. The family’s trigram gives its phase.'],
+    shiying: ['World and Response (世 / 应)', 'Two marked lines. 世 stands for the asker, 应 for the other side or the matter. They are always three lines apart.'],
+    youhun: ['Wandering / Returning soul (游魂 / 归魂)', 'The last two hexagrams of each palace. Wandering: from the 5th generation, flip the 4th line back. Returning: then flip the whole lower trigram back to the palace trigram.'],
+    najia: ['Najia (纳甲)', '“Taking in the stems”: every line of every trigram is given a fixed stem and branch. The branch brings a phase (wood, fire, earth, metal, water), which is what the reading works with.'],
+    wuxing: ['Five phases (五行)', 'Wood, fire, earth, metal, water. Each produces the next (wood → fire → earth → metal → water → wood) and overcomes the one after that (wood → earth → water → fire → metal → wood).'],
+    liuqin: ['Six relatives (六亲)', 'Each line’s phase compared with the palace’s phase: same = Siblings; palace produces it = Offspring; palace overcomes it = Wealth; it overcomes the palace = Officer; it produces the palace = Parents.'],
+    yongshen: ['Use spirit (用神)', 'The relative that stands for what is asked about: money → Wealth, a job or a husband → Officer, documents or parents → Parents, and so on. Reading starts by finding it.'],
+    fushen: ['Hidden spirit (伏神)', 'A relative that is missing from the main hexagram. It is taken from the pure hexagram of the same palace, at the same line, and noted as hiding under that line.'],
+    yuejian: ['Month ruler (月建)', 'The branch of the month the casting was made in. Months turn at the 12 “节” solar terms (立春, 惊蛰 …), not on the 1st.'],
+    richen: ['Day ruler (日辰)', 'The stem-branch of the day of casting. With the month ruler, it is what the lines’ strength is judged against.'],
+    xunkong: ['Void (旬空)', 'The day falls in a run of ten (旬) that pairs ten stems with ten branches; the two branches left out are “void” for that run.'],
+    yuepo: ['Month break (月破)', 'The branch directly opposite the month’s branch (e.g. 酉 against 卯). A line with that branch is “broken” by the month.'],
+    liushen: ['Six spirits (六神)', 'Green Dragon, Red Bird, Hook, Flying Snake, White Tiger, Black Tortoise, laid from the bottom line up, starting from one set by the day stem.'],
+    shanchu: ['What the book cut out', 'The <i>Zengshan Buyi</i>’s preface says it removed teachings such as the “hexagram body” (卦身), “world body” (世身), spirit-stars (星煞) and birth year (本命), so readers would not be led astray. This lesson leaves them out too.'],
+  },
+  zh: {
+    dotted: ['就像这样', '点击任何带下划线的词，查看它的意思。点击其他地方或按 Esc 关闭。'],
+    yiqian: ['以钱代蓍', '古法用五十根蓍草起卦，过程很长。用三枚铜钱一摇，就能得到同样的四种爻。'],
+    zibei: ['字与背', '铜钱有字的一面叫“字”，没字的一面叫“背”。本页按字 = 2、背 = 3 计。也有人反过来算，那样阴阳就颠倒了。'],
+    yao: ['爻', '卦的六条线，实线为阳，断线为阴。从下往上数：初、二、三、四、五、上。'],
+    dong: ['动爻', '“老”的爻（老阳、老阴）已到极点，要变成反面。断卦时动爻最要紧。'],
+    bengua: ['本卦', '六次摇钱得到的卦，代表眼下的情况。'],
+    biangua: ['变卦', '把本卦里的动爻全部阴阳翻转后得到的卦，代表动爻变化的去向。'],
+    gong: ['八宫', '京房把六十四卦分成八宫，每宫八卦，以八纯卦为首。宫的卦决定这一宫的五行。'],
+    shiying: ['世与应', '卦中两个标记的爻。世代表求测的人自己，应代表对方或所问之事。世应永远相隔三爻。'],
+    youhun: ['游魂、归魂', '每宫最后两卦。游魂：把五世卦的第四爻变回来。归魂：再把整个下卦变回本宫的卦。'],
+    najia: ['纳甲', '给八卦的每一爻配上固定的天干地支。地支带来五行（木火土金水），断卦主要就看它。'],
+    wuxing: ['五行', '木、火、土、金、水。相生：木生火、火生土、土生金、金生水、水生木。相克：木克土、土克水、水克火、火克金、金克木。'],
+    liuqin: ['六亲', '拿每爻的五行和卦宫五行比：同我者兄弟，我生者子孙，我克者妻财，克我者官鬼，生我者父母。'],
+    yongshen: ['用神', '代表所问之事的那个六亲：问财看妻财，问官职、丈夫看官鬼，问文书、父母看父母……断卦先要找到它。'],
+    fushen: ['伏神', '本卦里缺了的六亲，到本宫八纯卦的同一爻位去找，记作伏在这一爻之下。'],
+    yuejian: ['月建', '起卦那个月的地支。月份以立春、惊蛰等十二个“节”为界，不是每月 1 号。'],
+    richen: ['日辰', '起卦那天的干支。断卦时，各爻的旺衰主要拿月建和日辰来衡量。'],
+    xunkong: ['旬空', '日辰所在的一旬里，十个天干配十个地支，剩下两个地支没配上，叫旬空。'],
+    yuepo: ['月破', '和月建相冲的地支（比如卯月冲酉）。爻的地支逢月破，叫做被月所破。'],
+    liushen: ['六神', '青龙、朱雀、勾陈、螣蛇、白虎、玄武，按日干定起点，从初爻往上排。'],
+    shanchu: ['书中删去了什么', '《增删卜易》的序说，书里删去了“卦身”“世身”“星煞”“本命”等说法，免得读者走入歧路。所以这一课也不讲这些。'],
+  },
+};
+const G = () => GLOSS[LANG];
+const T = (k, txt) => `<span class="term" data-term="${k}" tabindex="0">${txt || G()[k][0]}</span>`;
+
+// ---------- the chart ----------
+// st.layers: lines bian shiying najia liuqin fushen bianNajia marks shen;  st.fresh: newest layer;  st.hl: line indexes
+function boardHtml(g, st) {
+  const has = k => st.layers.includes(k), hl = new Set(st.hl || []), n = g ? g.tosses.length : 0;
+  const fr = (k, i) => st.fresh === k ? ` new" style="animation-delay:${(i * 0.12).toFixed(2)}s` : '';
+  let head = '';
+  if (g && n === 6 && has('bian')) {
+    head = `<div class="ghead"><span class="nm">${g.ben.name}</span>${has('shiying') ? `<span class="sub">${g.ben.pal}${tx(' palace · ', '宫 · ')}${L(GEN[g.ben.gen])} · ${tx('palace phase', '属')}${WX[g.palWx]}</span>` : ''}${g.hasMove ? `<span class="to">→ ${g.bian.name}</span>` : `<span class="sub">${tx('no moving line', '静卦')}</span>`}</div>`;
+  }
+  if (g && has('marks')) head += `<div class="gtime">${tx('Month', '月建')} <b>${BRANCHES[g.cal.monthBr]}</b> · ${tx('Day', '日辰')} <b>${GZ(g.cal.dayIdx)}</b> · ${tx('Void', '旬空')} <b>${BRANCHES[g.cal.kong[0]]}${BRANCHES[g.cal.kong[1]]}</b> · ${tx('Month break', '月破')} <b>${BRANCHES[g.cal.po]}</b></div>`;
+  const showBian = g && n === 6 && g.hasMove && has('bian');
+  let h = `${head}<div class="gwrap"><table class="gua"><tr><th></th><th>${has('shen') ? tx('Spirit', '六神') : ''}</th><th>${has('fushen') ? tx('Hidden', '伏神') : ''}</th><th>${has('liuqin') ? tx('Relative', '六亲') : ''}</th><th>${has('najia') ? tx('Branch', '纳甲') : ''}</th><th>${tx('Main', '本卦')}</th><th></th><th></th>${showBian ? `<th>${tx('Changed', '变卦')}</th><th></th>` : ''}</tr>`;
+  for (let i = 5; i >= 0; i--) {
+    const on = i < n, l = g && g.lines && g.lines[i], v = on ? g.tosses[i] : 0, mv = on && (v === 6 || v === 9);
+    h += `<tr class="${hl.has(i) ? 'hl' : ''}"><td class="pos">${isZh() ? POS[i][1] : POS[i][0]}</td>`;
+    h += `<td class="sh">${on && has('shen') ? `<span class="${fr('shen', i)}">${SHEN[g.shen[i]]}</span>` : ''}</td>`;
+    h += `<td class="fu">${on && has('fushen') && g.fu[i] ? `<span class="${fr('fushen', 0)}">${REL[g.fu[i].rel]}${gzw(g.fu[i])}</span>` : ''}</td>`;
+    h += `<td class="rel">${on && has('liuqin') ? `<span class="${fr('liuqin', i)}">${REL[l.rel]}</span>` : ''}</td>`;
+    let mk = '';
+    if (on && has('marks')) mk = (g.cal.kong.includes(l.br) ? `<i class="k">空</i>` : '') + (g.cal.po === l.br ? `<i class="p">破</i>` : '');
+    h += `<td class="gz">${on && has('najia') ? `<span class="${fr('najia', i)}">${l.gz[1]}${WX[l.wx]}<small>${has('liuqin') ? '' : ' ' + l.gz[0]}</small></span>` : ''}<span class="mk">${mk}</span></td>`;
+    h += `<td>${on ? `<span class="${st.fresh === 'lines' && i === n - 1 ? 'new' : ''}">${bar(g.bits[i], mv ? 'mv' : '')}</span>` : bar(1, 'ghost')}</td>`;
+    h += `<td class="sy">${on && has('shiying') ? (g.shi === i + 1 ? `<b class="s ${fr('shiying', 0).trim()}">世</b>` : g.ying === i + 1 ? `<b class="y">应</b>` : '') : ''}</td>`;
+    h += `<td class="mv">${on ? TOSS[v][3] : ''}</td>`;
+    if (showBian) {
+      const b = g.bianLines[i];
+      h += `<td class="bv">${mv && has('bianNajia') ? `<span class="${fr('bianNajia', i)}">${REL[b.rel]}${gzw(b)}</span>` : ''}</td><td>${`<span class="${fr('bian', i)}">${bar(g.bianBits[i], mv ? 'bian' : 'ghost')}</span>`}</td>`;
+    }
+    h += '</tr>';
+  }
+  h += '</table></div>';
+  const leg = [has('shen') && `<span><b style="color:var(--c4)">■</b> ${tx('six spirits', '六神')}</span>`, has('liuqin') && `<span><b style="color:var(--c1)">■</b> ${tx('six relatives', '六亲')}</span>`,
+    has('najia') && `<span><b style="color:var(--c2)">■</b> ${tx('branch + phase', '地支五行')}</span>`, `<span><b style="color:#b91c1c">○ ×</b> ${tx('moving', '动爻')}</span>`, showBian && `<span><b style="color:var(--c3)">■</b> ${tx('changed', '变爻')}</span>`, has('marks') && `<span class="mk"><i class="k">空</i> ${tx('void', '旬空')} <i class="p">破</i> ${tx('month break', '月破')}</span>`].filter(Boolean).join('');
+  return h + `<div class="legendrow">${leg}</div>`;
+}
+
+// ---------- the toss step (step 0) ----------
+let lastCoins = null, spinning = false;
+function coinHtml(c, spin) {
+  if (c === null) return `<div class="coin blank"><div class="face"></div>&nbsp;</div>`;
+  return `<div class="coin ${c ? 'back' : ''}${spin ? ' spin' : ''}"><div class="face">${c ? '' : '<b>·</b><b>·</b><b>·</b><b>·</b>'}</div><span>${c ? tx('back 3', '背 3') : tx('face 2', '字 2')}</span></div>`;
+}
+function tossStory(g, n) {
+  const done = n >= 6, c = lastCoins;
+  const res = c ? (() => { const v = c.reduce((s, x) => s + (x ? 3 : 2), 0), t = TOSS[v]; return `${tx(`Last toss (${L(POS[n - 1]).toLowerCase()} line): `, `上一次（${POS[n - 1][1]}爻）：`)}${c.map(x => x ? 3 : 2).join(' + ')} = <b>${v}</b> → ${L(t)}${tx(` (${t[2]})`, `（${t[2]}）`)} ${v % 2 ? tx('yang', '阳爻') : tx('yin', '阴爻')}${t[3] ? tx(`, moving ${t[3]}`, `，动 ${t[3]}`) : ''}`; })() : '&nbsp;';
+  let h = `<div class="n">${tx('Casting', '起卦')}</div><h2>${done ? tx('Six tosses, six lines', '六次摇完，六爻成卦') : tx(`Toss ${n + 1} of 6 → the ${L(POS[n]).toLowerCase()} line`, `第 ${n + 1} 次，共 6 次 → ${POS[n][1]}爻`)}</h2>`;
+  h += `<p>${tx(`${T('yiqian')}: hold three coins, keep the question in mind, shake and drop them. Each ${T('zibei', 'face')} counts 2 and each back counts 3; the total gives one ${T('yao', 'line')}. The first toss is the <b>bottom</b> line.`, `${T('yiqian')}：手捧三枚铜钱，心想所问之事，摇后掷下。${T('zibei', '字')}算 2，背算 3，三枚相加得一${T('yao')}。第一次得的是<b>最下面</b>的初爻。`)}</p>`;
+  if (!done) {
+    h += `<div class="coins">${(c || [null, null, null]).map(x => coinHtml(x, spinning)).join('')}</div><div class="result">${res}</div>`;
+    h += `<div class="tossbar"><button class="btn primary" id="tossBtn" style="font-size:17px;padding:10px 26px">${tx('🪙 Toss', '🪙 摇钱')}</button>${n ? `<button class="btn" id="undoBtn">${tx('Undo last', '撤销上一爻')}</button>` : ''}</div>`;
+    h += `<div class="manual">${tx('Tossed real coins? Enter it:', '用真铜钱摇了？直接输入：')}${[7, 8, 9, 6].map(v => `<button type="button" data-v="${v}">${tx(['', '', '', '', '', '', 'three faces', 'one back', 'two backs', 'three backs'][v], ['', '', '', '', '', '', '三字（交）', '一背（单）', '两背（拆）', '三背（重）'][v])}</button>`).join('')}</div>`;
+  } else {
+    h += `<div class="coins">${(c || [0, 0, 0]).map(x => coinHtml(x, false)).join('')}</div><div class="result">${res}</div>`;
+    h += `<div class="tip-box">💡 ${tx(`The hexagram is cast${g.hasMove ? `, with ${g.moving.filter(Boolean).length} moving line${g.moving.filter(Boolean).length > 1 ? 's' : ''}` : ', with no moving line'}. Now it has to be <b>set up</b> (装卦): named, placed in its palace, given branches, relatives and the rest. Press <b>Next</b>.`, `卦已成${g.hasMove ? `，有 ${g.moving.filter(Boolean).length} 个动爻` : '，没有动爻'}。接下来要<b>装卦</b>：定卦名、找卦宫、配地支、安六亲……按<b>下一步</b>。`)}<div style="margin-top:6px"><button class="btn" id="retossBtn">${tx('Toss all six again', '重新摇卦')}</button></div></div>`;
+  }
+  return h;
+}
+function tossWork(g, n) {
+  if (!n) return `<table class="t"><tr><th>${tx('Coins', '铜钱')}</th><th>${tx('Sum', '和')}</th><th>${tx('Line', '爻')}</th></tr>${[[0, 0, 0], [1, 0, 0], [1, 1, 0], [1, 1, 1]].map(c => { const v = c.reduce((s, x) => s + (x ? 3 : 2), 0), t = TOSS[v]; return `<tr><td>${c.map(x => x ? tx('back', '背') : tx('face', '字')).join(' ')}</td><td>${v}</td><td>${L(t)} · ${t[2]} ${bar(v % 2, t[3] ? 'mv' : '')} ${t[3]}</td></tr>`; }).join('')}</table><div class="verse">${tx('The book’s rule: one back = single (yang), two backs = split (yin), three backs = doubled (old yang, moving), three faces = crossed (old yin, moving).', '一背为单（少阳），两背为拆（少阴），三背为重（老阳，动），三字为交（老阴，动）。')}</div>`;
+  return `<table class="t"><tr><th>${tx('Line', '爻位')}</th><th>${tx('Sum', '和')}</th><th>${tx('Kind', '爻')}</th></tr>${g.tosses.map((v, i) => `<tr class="${i === n - 1 ? 'on' : ''}"><td>${nPos(i)}</td><td>${v}</td><td>${L(TOSS[v])} · ${TOSS[v][2]} ${TOSS[v][3]}</td></tr>`).reverse().join('')}</table>`;
+}
+
+// ---------- the set-up steps ----------
+function buildSteps(g) {
+  const S = [], mvIdx = g.moving.map((m, i) => m ? i : -1).filter(i => i >= 0), cal = g.cal;
+  const L1 = ['lines', 'bian'], L2 = [...L1, 'shiying'], L3 = [...L2, 'najia'], L4 = [...L3, 'liuqin'], L5 = [...L4, 'fushen'], L6 = [...L5, 'bianNajia'], L7 = [...L6, 'marks'], L8 = [...L7, 'shen'];
+  // 1. name the hexagrams
+  S.push({ short: tx('Name', '卦名'), title: tx('Split into trigrams → name the hexagrams', '分上下卦 → 定本卦、变卦'),
+    story: tx(`The lower three lines make one trigram, the upper three another: ${nTri(g.ben.up)} above ${nTri(g.ben.lo)}. Together they are the ${T('bengua', 'main hexagram')} <b>${nHex(g.ben)}</b>. ${g.hasMove ? `Flip every ${T('dong', 'moving line')} (○ yang → yin, × yin → yang) to get the ${T('biangua', 'changed hexagram')} <b>${nHex(g.bian)}</b>.` : 'There is no moving line, so there is no changed hexagram: a “still” hexagram (静卦).'}`,
+      `下面三爻是一个卦，上面三爻是一个卦：上${nTri(g.ben.up)}，下${nTri(g.ben.lo)}，合起来是${T('bengua')} <b>${g.ben.name}</b>。${g.hasMove ? `把${T('dong', '动爻')}全部翻转（○ 阳变阴，× 阴变阳），得到${T('biangua')} <b>${g.bian.name}</b>。` : '没有动爻，所以没有变卦，叫“静卦”。'}`),
+    takeaway: tx('The name is read “upper image + lower image + name”: 天风姤 is Heaven over Wind. A doubled trigram is called “X为Y”, like 乾为天.', '卦名的读法是“上卦之象 + 下卦之象 + 卦名”：天风姤就是上天下风。上下相同的叫“某为某”，如乾为天。'),
+    work: `<table class="t"><tr><th></th><th>${tx('Upper (4–6)', '上卦（四至上）')}</th><th>${tx('Lower (1–3)', '下卦（初至三）')}</th><th>${tx('Hexagram', '卦')}</th></tr><tr><td>${tx('Main', '本卦')}</td><td>${mini(g.bits.slice(3))} ${nTri(g.ben.up)}</td><td>${mini(g.bits.slice(0, 3))} ${nTri(g.ben.lo)}</td><td><b>${g.ben.name}</b></td></tr>${g.hasMove ? `<tr><td>${tx('Changed', '变卦')}</td><td>${mini(g.bianBits.slice(3))} ${nTri(g.bian.up)}</td><td>${mini(g.bianBits.slice(0, 3))} ${nTri(g.bian.lo)}</td><td><b>${g.bian.name}</b></td></tr>` : ''}</table>`
+      + `<div class="sec-title" style="margin-top:12px">${tx('Eight trigrams', '八卦')}</div><table class="t">${TRI.map((t, k) => `<tr class="${k === g.ben.up || k === g.ben.lo ? 'on' : ''}"><td>${mini(t.bits)}</td><td>${t.n}</td><td>${t.img}</td><td>${tx(t.en, '')}</td></tr>`).join('')}</table>`,
+    board: { layers: L1, fresh: 'bian', hl: mvIdx } });
+  // 2. palace and world/response
+  const plist = palaceList(g.ben.pal);
+  S.push({ short: tx('Palace', '卦宫'), title: tx(`Find the palace → 世 and 应`, '找卦宫 → 安世应'),
+    story: tx(`Every hexagram belongs to one of the ${T('gong', 'eight palaces')}. Each palace starts from a doubled trigram and changes one line at a time from the bottom: 1st, 2nd … 5th generation, then the ${T('youhun', 'wandering and returning souls')}. ${g.ben.name} is the <b>${L(GEN[g.ben.gen])}</b> of the <b>${g.ben.pal}</b> palace, so its palace phase is <b>${nWx(g.palWx)}</b>.`,
+      `每个卦都属于${T('gong')}中的一宫。一宫从八纯卦开始，从下往上一次变一爻：一世、二世……五世，再加${T('youhun')}。${g.ben.name}是<b>${g.ben.pal}宫${L(GEN[g.ben.gen])}</b>卦，所以卦宫五行属<b>${WX[g.palWx]}</b>。`),
+    takeaway: tx(`The generation fixes the ${T('shiying', 'World line (世)')}: pure → top line; 1st–5th generation → that line; wandering → 4th; returning → 3rd. The Response (应) is always three lines away. Here 世 is on the ${nPos(g.shi - 1)}, 应 on the ${nPos(g.ying - 1)}.`,
+      `第几世就决定${T('shiying', '世爻')}在哪：八纯世在上爻，一世到五世就在那一爻，游魂世在四爻，归魂世在三爻。应爻永远和世隔三爻。这里世在${nPos(g.shi - 1)}，应在${nPos(g.ying - 1)}。`),
+    work: `<table class="t"><tr><th></th><th>${tx(`${g.ben.pal} palace`, `${g.ben.pal}宫八卦`)}</th><th>${tx('change', '怎么变')}</th><th>世</th></tr>${plist.map(([k, x], j) => `<tr class="${x.name === g.ben.name ? 'on' : ''}"><td>${L(GEN[x.gen])}</td><td>${mini(k.split('').map(Number), x.flip > 0 ? [x.flip - 1] : x.flip === -1 ? [0, 1, 2] : [])} ${x.name}</td><td style="font-size:12.5px">${x.gen === 0 ? tx('start', '起点') : x.gen <= 5 ? tx(`flip line ${x.gen}`, `变${POS[x.gen - 1][1]}爻`) : x.gen === 6 ? tx('line 4 back', '四爻变回') : tx('lower back', '下卦变回')}</td><td>${nPos(SHI[x.gen] - 1)}</td></tr>`).join('')}</table>`,
+    board: { layers: L2, fresh: 'shiying', hl: [g.shi - 1, g.ying - 1] } });
+  // 3. najia
+  S.push({ short: tx('Najia', '纳甲'), title: tx('Najia: give each line a branch', '纳甲：每爻配地支'),
+    story: tx(`Now ${T('najia', 'Najia')}. Each trigram has a fixed set of stems and branches, one set for when it is the lower (inner) trigram and one for the upper (outer). The lower ${TRI[g.ben.lo].n} gives lines 1–3 ${NAJIA[TRI[g.ben.lo].n].slice(0, 3).join(' ')}; the upper ${TRI[g.ben.up].n} gives lines 4–6 ${NAJIA[TRI[g.ben.up].n].slice(3).join(' ')}.`,
+      `接下来${T('najia')}。每个卦配有固定的干支：在下（内卦）用一组，在上（外卦）用另一组。下卦${TRI[g.ben.lo].n}给初至三爻配 ${NAJIA[TRI[g.ben.lo].n].slice(0, 3).join(' ')}；上卦${TRI[g.ben.up].n}给四至上爻配 ${NAJIA[TRI[g.ben.up].n].slice(3).join(' ')}。`),
+    takeaway: tx(`Each branch brings its ${T('wuxing', 'phase')}: 子亥 water, 寅卯 wood, 巳午 fire, 申酉 metal, 辰戌丑未 earth. Reading in the Wild Crane’s style works almost entirely with these branches and phases, so the stems are often left off the chart.`,
+      `每个地支带着自己的${T('wuxing')}：子亥水，寅卯木，巳午火，申酉金，辰戌丑未土。野鹤老人的断法几乎全看地支五行，所以排出的卦常常不写天干。`),
+    work: `<table class="t"><tr><th></th><th>${tx('Inner: 1 2 3', '内卦：初 二 三')}</th><th>${tx('Outer: 4 5 6', '外卦：四 五 上')}</th></tr>${TRI.map((t, k) => `<tr><td><b>${t.n}</b></td><td class="${k === g.ben.lo ? 'on' : ''}">${NAJIA[t.n].slice(0, 3).join(' ')}</td><td class="${k === g.ben.up ? 'on' : ''}">${NAJIA[t.n].slice(3).join(' ')}</td></tr>`).join('')}</table><div class="verse">${tx('Pattern: yang trigrams (乾震坎艮) run their branches forwards, yin trigrams (坤巽离兑) backwards; 乾 and 坤 change stem between inner and outer.', '规律：阳卦（乾震坎艮）地支顺排，阴卦（坤巽离兑）地支逆排；乾内甲外壬，坤内乙外癸。')}</div>`,
+    board: { layers: L3, fresh: 'najia' } });
+  // 4. six relatives
+  S.push({ short: tx('Relatives', '六亲'), title: tx('Six relatives: compare with the palace', '安六亲：和卦宫比五行'),
+    story: tx(`The palace is ${nWx(g.palWx)} — call it “me”. Compare each line’s phase with it to get its ${T('liuqin', 'relative')}: same as me = Siblings, I produce = Offspring, I overcome = Wealth, overcomes me = Officer, produces me = Parents.`,
+      `卦宫属${WX[g.palWx]}，把它当作“我”。拿每一爻的五行和“我”比，得出${T('liuqin')}：同我者兄弟，我生者子孙，我克者妻财，克我者官鬼，生我者父母。`),
+    takeaway: tx(`Reading begins here: pick the ${T('yongshen', 'use spirit')} — the relative that stands for what you asked about — and judge its strength. Always use the palace phase, not the trigram the line happens to sit in.`,
+      `断卦就从这里开始：先找${T('yongshen')}——代表所问之事的那个六亲——再看它的旺衰。注意永远拿<b>卦宫</b>的五行来比，不是拿各爻所在的上下卦来比。`),
+    work: `<table class="t"><tr><th>${tx(`Palace ${WX[g.palWx]} vs`, `宫${WX[g.palWx]} 比`)}</th><th>${tx('Phase', '五行')}</th><th>${tx('Relative', '六亲')}</th></tr>${[0, 1, 2, 3, 4].map(r => `<tr class="${g.present.has(r) ? '' : ''}"><td>${L(REL_WHY[r])}</td><td>${nWx(mod(g.palWx + r, 5))}</td><td><b style="color:var(--c1)">${nRel(r)}</b>${g.present.has(r) ? '' : ` <span class="none">${tx('missing', '缺')}</span>`}</td></tr>`).join('')}</table>`
+      + `<table class="t"><tr><th>${tx('Line', '爻')}</th><th>${tx('Branch', '地支')}</th><th>${tx('Relative', '六亲')}</th></tr>${g.lines.map((l, i) => `<tr><td>${nPos(i)}</td><td>${gzw(l)}</td><td>${REL[l.rel]}</td></tr>`).reverse().join('')}</table>`,
+    board: { layers: L4, fresh: 'liuqin' } });
+  // 5. hidden spirits
+  const fuIdx = g.fu.map((f, i) => f ? i : -1).filter(i => i >= 0);
+  S.push({ short: tx('Hidden', '伏神'), title: tx('Missing relatives → hidden spirits', '缺哪个六亲 → 找伏神'),
+    story: g.missing.length
+      ? tx(`Five relatives, six lines — but ${g.ben.name} has no <b>${g.missing.map(r => REL[r]).join(', ')}</b>. If what you ask about is missing, borrow it: look in the pure hexagram of the palace, ${PALACES.find(p => p[0] === g.ben.pal)[1].split(' ')[0]}, at the same line. It becomes a ${T('fushen', 'hidden spirit')} under that line.`,
+        `五种六亲、六个爻，可是${g.ben.name}里没有 <b>${g.missing.map(r => REL[r]).join('、')}</b>。万一所问之事正是缺的那个，就去本宫八纯卦 ${PALACES.find(p => p[0] === g.ben.pal)[1].split(' ')[0]} 的同一爻位去借，叫做${T('fushen')}，伏在这一爻之下。`)
+      : tx(`All five relatives appear in ${g.ben.name}, so nothing has to be borrowed: no ${T('fushen', 'hidden spirit')} is needed.`, `${g.ben.name}五种六亲都有，不用去借，没有${T('fushen')}。`),
+    takeaway: tx('The line it hides under is called the “flying” spirit (飞神). Whether a hidden spirit can come out depends on how it stands with that line, the month and the day.', '伏神上面那一爻叫“飞神”。伏神能不能出来用，要看它和飞神、月建、日辰的生克关系。'),
+    work: `<table class="t"><tr><th>${tx('Line', '爻')}</th><th>${PALACES.find(p => p[0] === g.ben.pal)[1].split(' ')[0]}</th><th>${g.ben.name}</th></tr>${g.pure.map((p, i) => `<tr class="${g.fu[i] ? 'on' : ''}"><td>${nPos(i)}</td><td>${REL[p.rel]}${gzw(p)}</td><td>${REL[g.lines[i].rel]}${gzw(g.lines[i])}</td></tr>`).reverse().join('')}</table>`,
+    board: { layers: L5, fresh: 'fushen', hl: fuIdx } });
+  // 6. changed lines
+  S.push({ short: tx('Changed', '变爻'), title: tx('Set up the changed lines', '装变爻'),
+    story: g.hasMove
+      ? tx(`Each moving line turns into a line of ${g.bian.name}. Give it the Najia branch of ${g.bian.name} at that position, then its relative — still compared with the <b>main</b> hexagram’s palace (${WX[g.palWx]}), not the changed hexagram’s palace.`,
+        `每个动爻都变成${g.bian.name}的一爻。按${g.bian.name}纳甲给它配上那一爻的地支，再安六亲——仍然拿<b>本卦</b>的卦宫（${WX[g.palWx]}）来比，不是用变卦自己的卦宫。`)
+      : tx('No line moves, so there is nothing to change. A still hexagram is read from the main hexagram, the month and the day.', '没有动爻，也就没有变爻。静卦只看本卦、月建和日辰。'),
+    takeaway: tx('Only the moving lines’ changes are written down. A moving line is judged by what it turns into: changing into something that produces it helps (回头生), into something that overcomes it hurts (回头克).', '只写动爻变出来的那一爻。动爻要看它变成了什么：变出来的生它叫回头生，克它叫回头克。'),
+    work: g.hasMove ? `<table class="t"><tr><th>${tx('Line', '爻')}</th><th>${tx('Main', '本')}</th><th></th><th>${tx('Changed', '变')}</th></tr>${mvIdx.map(i => `<tr><td>${nPos(i)}</td><td>${REL[g.lines[i].rel]}${gzw(g.lines[i])}</td><td>→</td><td><b style="color:var(--c3)">${REL[g.bianLines[i].rel]}${gzw(g.bianLines[i])}</b></td></tr>`).reverse().join('')}</table>` : `<span class="none">${tx('Nothing moves.', '无动爻。')}</span>`,
+    board: { layers: L6, fresh: 'bianNajia', hl: mvIdx } });
+  // 7. month and day
+  const marked = g.lines.map((l, i) => cal.kong.includes(l.br) || cal.po === l.br ? i : -1).filter(i => i >= 0);
+  S.push({ short: tx('Month, day', '月日'), title: tx('Month and day of casting → void, month break', '起卦的月建、日辰 → 旬空、月破'),
+    story: tx(`Now the locked moment matters. The month turns at a solar term: since ${cal.jie} (${fmt(cal.jieAt)}) the ${T('yuejian', 'month ruler')} is <b>${BRANCHES[cal.monthBr]}</b>. The ${T('richen', 'day ruler')} is <b>${GZ(cal.dayIdx)}</b>${cal.rolled ? ' (after 23:00, already the next day)' : ''}. Every line’s strength is judged against these two.`,
+      `锁定的时间现在派上用场了。月份按节气换：从${cal.jie}（${fmt(cal.jieAt)}）起，${T('yuejian')}是 <b>${BRANCHES[cal.monthBr]}</b>。${T('richen')}是 <b>${GZ(cal.dayIdx)}</b>${cal.rolled ? '（已过 23 点，算第二天）' : ''}。每一爻的旺衰都拿这两个来衡量。`),
+    takeaway: tx(`${GZ(cal.dayIdx)} is in the ${GZ(cal.xun * 10)} run of ten, whose ${T('xunkong', 'void')} branches are <b>${BRANCHES[cal.kong[0]]}${BRANCHES[cal.kong[1]]}</b>. The branch opposite the month, <b>${BRANCHES[cal.po]}</b>, is the ${T('yuepo', 'month break')}. ${marked.length ? `Marked in the chart: ${marked.map(i => nPos(i)).join(', ')}.` : 'No line of this hexagram is void or broken.'}`,
+      `${GZ(cal.dayIdx)}在${GZ(cal.xun * 10)}旬，${T('xunkong')} <b>${BRANCHES[cal.kong[0]]}${BRANCHES[cal.kong[1]]}</b>。和月建相冲的 <b>${BRANCHES[cal.po]}</b> 是${T('yuepo')}。${marked.length ? `卦中已标出：${marked.map(i => nPos(i)).join('、')}。` : '这一卦没有爻逢空、逢破。'}`),
+    work: `<table class="t"><tr><td>${tx('Month ruler', '月建')}</td><td><b>${GZ(cal.monthIdx)}</b> · ${BRANCHES[cal.monthBr]}${WX[BR_WX[cal.monthBr]]}</td></tr><tr><td>${tx('Day ruler', '日辰')}</td><td><b>${GZ(cal.dayIdx)}</b> · ${BRANCHES[cal.dayIdx % 12]}${WX[BR_WX[cal.dayIdx % 12]]}</td></tr><tr><td>${tx('Void', '旬空')}</td><td>${GZ(cal.xun * 10)}${tx(' run → ', '旬 → ')}<b>${BRANCHES[cal.kong[0]]} ${BRANCHES[cal.kong[1]]}</b></td></tr><tr><td>${tx('Month break', '月破')}</td><td>${BRANCHES[cal.monthBr]} ${tx('opposes', '冲')} <b>${BRANCHES[cal.po]}</b></td></tr></table>`
+      + `<div class="cmp">${tx(`Day: 2000-01-01 was 戊午 (54); ${cal.days} days later → (54 + ${cal.days}) mod 60 = ${cal.dayIdx} = ${GZ(cal.dayIdx)}.`, `日辰：2000-01-01 是戊午日（第 54 号），过了 ${cal.days} 天 → (54 + ${cal.days}) mod 60 = ${cal.dayIdx}，即${GZ(cal.dayIdx)}。`)}</div>`,
+    board: { layers: L7, fresh: 'marks', hl: marked } });
+  // 8. six spirits
+  S.push({ short: tx('Spirits', '六神'), title: tx('Lay the six spirits', '排六神'),
+    story: tx(`Last, the ${T('liushen', 'six spirits')}. The day stem ${STEMS[cal.dayIdx % 10]} sets where to start: 甲乙 → 青龙, 丙丁 → 朱雀, 戊 → 勾陈, 己 → 螣蛇, 庚辛 → 白虎, 壬癸 → 玄武. Start at the bottom line with <b>${nShen(g.shenStart)}</b> and go up in the order 青龙 朱雀 勾陈 螣蛇 白虎 玄武.`,
+      `最后排${T('liushen')}。日干${STEMS[cal.dayIdx % 10]}决定起点：甲乙起青龙，丙丁起朱雀，戊起勾陈，己起螣蛇，庚辛起白虎，壬癸起玄武。从初爻起 <b>${SHEN[g.shenStart]}</b>，按 青龙 朱雀 勾陈 螣蛇 白虎 玄武 的顺序往上排。`),
+    takeaway: tx(`The chart is set up. In one line: <b>${g.ben.name}${g.hasMove ? ` changing to ${g.bian.name}` : ' (still)'}, ${g.ben.pal} palace ${L(GEN[g.ben.gen])}, 世 on the ${nPos(g.shi - 1)}</b>. The Wild Crane treats the six spirits as colour only: the verdict comes from the branches, the month and the day. The book also ${T('shanchu', 'cut out')} several older add-ons.`,
+      `卦装好了。一句话：<b>${g.ben.name}${g.hasMove ? `之${g.bian.name}` : '（静）'}，${g.ben.pal}宫${L(GEN[g.ben.gen])}，世在${nPos(g.shi - 1)}</b>。野鹤老人把六神只当作陪衬，吉凶还是看地支五行与月建日辰。书里还${T('shanchu', '删去了')}好几种旧说。`),
+    work: `<table class="t"><tr><th>${tx('Line', '爻')}</th><th>${tx('Spirit', '六神')}</th></tr>${g.shen.map((s, i) => `<tr class="${i === 0 ? 'on' : ''}"><td>${nPos(i)}</td><td><b style="color:var(--c4)">${nShen(s)}</b></td></tr>`).reverse().join('')}</table>`,
+    board: { layers: L8, fresh: 'shen' } });
+  return S;
+}
+function wrapHtml() {
+  const ck = items => items.map(([ok, t]) => `<p><span class="${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✗'}</span>${t}</p>`).join('');
+  return ck([
+    [1, tx('Three coins, six tosses, bottom line first. 7 and 8 are still lines; 9 (○) and 6 (×) move and flip into the changed hexagram.', '三枚钱，摇六次，从初爻往上。7、8 是静爻；9（○）、6（×）是动爻，翻转后成变卦。')],
+    [1, tx('Palace → generation → 世 and 应. Najia gives each line a branch and phase.', '卦宫 → 第几世 → 世应。纳甲给每一爻配上地支五行。')],
+    [1, tx('Six relatives always compare with the main hexagram’s palace — for the changed lines too. Missing relatives are borrowed as hidden spirits from the pure hexagram.', '六亲永远和本卦卦宫比，变爻也一样。缺的六亲到本宫八纯卦借，叫伏神。')],
+    [1, tx('The moment of casting gives the month ruler and day ruler, and from them void and month break.', '起卦的时刻给出月建、日辰，再由它们得出旬空、月破。')],
+    [0, tx('Myth: the chart tells the answer by itself. Setting up is mechanical; judging needs the use spirit and its strength against month and day — that is what the rest of the book teaches.', '误解：装好卦答案就出来了。装卦是机械的；断卦要找用神、看它在月建日辰下的旺衰——这才是《增删卜易》后面大半本书讲的东西。')],
+  ]) + `<div class="tip-box">${tx('Press “Cast again” at the top to toss a new hexagram.', '按顶部的“重新起卦”再摇一卦。')}</div>`;
+}
+
+// ---------- the step engine ----------
+let lockMs = null, tosses = [], question = '', chart = null, steps = [], cur = 0;
+const $ = s => document.querySelector(s);
+const ready = () => tosses.length === 6;
+const last = () => steps.length + 1;
+function rebuild() { chart = setup(tosses, lockMs); steps = ready() ? buildSteps(chart) : []; }
+function go(i) {
+  if (!ready()) i = 0;
+  cur = Math.max(0, Math.min(ready() ? last() : 0, i)); hideTip();
+  let board, work;
+  if (cur === 0) { $('#story').innerHTML = tossStory(chart, tosses.length); board = { layers: ready() ? ['lines', 'bian'] : ['lines'], fresh: 'lines' }; work = tossWork(chart, tosses.length); }
+  else if (cur === last()) { $('#story').innerHTML = `<div class="n">${tx('Wrap-up', '总结')}</div><h2>${tx('The whole method in five lines', '五句话讲完起卦装卦')}</h2>${wrapHtml()}`; board = { layers: ['lines', 'bian', 'shiying', 'najia', 'liuqin', 'fushen', 'bianNajia', 'marks', 'shen'] }; work = steps[steps.length - 1].work; }
+  else { const st = steps[cur - 1]; $('#story').innerHTML = `<div class="n">${tx(`Step ${cur} of ${steps.length}`, `第 ${cur} 步，共 ${steps.length} 步`)}</div><h2>${st.title}</h2><p>${st.story}</p><div class="tip-box">💡 ${st.takeaway}</div>`; board = st.board; work = st.work; }
+  $('#board').innerHTML = boardHtml(chart, board);
+  $('#work').innerHTML = work;
+  const n = ready() ? last() + 1 : 1;
+  $('#dots').innerHTML = Array.from({ length: n }, (_, k) => `<button type="button" class="dot${k < cur ? ' done' : k === cur ? ' cur' : ''}" data-step="${k}" title="${k === 0 ? tx('Cast', '起卦') : k === last() ? tx('Wrap-up', '总结') : esc(steps[k - 1].short)}"></button>`).join('');
+  $('#pos').textContent = cur === 0 ? tx('Cast', '起卦') : cur === last() ? tx('Wrap-up', '总结') : `${cur} / ${steps.length}`;
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = !ready() || cur === last();
+  $('#next').textContent = cur === 0 ? tx('Set up →', '装卦 →') : cur === last() ? tx('Done ✓', '完成 ✓') : tx('Next →', '下一步 →');
+  saveUrl();
+}
+function saveUrl() {
+  const u = new URL(location.href);
+  u.searchParams.set('t', localStamp(lockMs)); u.searchParams.set('y', tosses.join('')); u.searchParams.set('step', cur);
+  setUrl(u);
+}
+function rand3() { const a = new Uint8Array(3); crypto.getRandomValues(a); return [...a].map(x => x & 1); }
+function addToss(coins, v) {
+  if (ready()) return;
+  lastCoins = coins || (() => { const b = v === 9 ? 3 : v === 8 ? 2 : v === 7 ? 1 : 0; return [0, 1, 2].map(k => k < b ? 1 : 0); })();
+  tosses.push(lastCoins.reduce((s, x) => s + (x ? 3 : 2), 0));
+  rebuild();
+}
+function doToss() {
+  if (spinning || ready()) return;
+  addToss(rand3()); tosses.pop(); rebuild();   // pick the result first, show it after the spin
+  const pick = lastCoins; spinning = true;
+  setTimeout(() => { spinning = false; lastCoins = pick; tosses.push(pick.reduce((s, x) => s + (x ? 3 : 2), 0)); rebuild(); go(0); }, 700);
+  go(0);
+}
+function localStamp(ms) { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+function parseStamp(s) { const m = /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)(?::(\d\d))?$/.exec(s || ''); return m ? new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)).getTime() : NaN; }
+function start(ms, ts, step) {
+  lockMs = ms; tosses = ts || []; lastCoins = null; rebuild();
+  $('#startView').hidden = true; $('#lessonView').hidden = false;
+  renderLocked(); go(step || 0);
+}
+function renderLocked() {
+  $('#locked').innerHTML = `🔒 <span>${tx('Cast at', '起卦于')} <b>${fmt(lockMs, true)}</b>${question ? ` · <span class="q">${esc(question)}</span>` : ''}</span><span class="sp"></span><button class="btn" id="again">${tx('Cast again', '重新起卦')}</button>`;
+  $('#again').onclick = () => {
+    const u = new URL(location.href); ['t', 'y', 'step'].forEach(k => u.searchParams.delete(k)); setUrl(u);
+    $('#lessonView').hidden = true; $('#startView').hidden = false; $('#pickT').value = localStamp(Date.now()).slice(0, 16); tick();
+  };
+}
+function applyLang() {
+  document.documentElement.lang = isZh() ? 'zh-Hans' : 'en';
+  document.title = tx('How a Liuyao hexagram is cast', '六爻是怎么起卦装卦的');
+  document.querySelectorAll('[data-t]').forEach(el => { el.innerHTML = U(el.dataset.t); });
+  $('#qText').placeholder = U('qPh');
+  $('#lang').value = LANG;
+  if (lockMs !== null) { rebuild(); renderLocked(); go(cur); }
+}
+function tick() { if (!$('#startView').hidden) { const n = Date.now(); $('#clock').innerHTML = `${fmt(n, true).slice(11)}<small>${fmt(n).slice(0, 10)} · ${tzStr(-new Date(n).getTimezoneOffset())}</small>`; } }
+function showTip(el) {
+  const [h, d] = G()[el.dataset.term], tip = $('#tip'), host = el.closest('dialog') || document.body;
+  if (tip.parentNode !== host) host.appendChild(tip);
+  tip.innerHTML = `<span class="x" role="button" aria-label="close">✕</span><b>${h}</b>${d}`;
+  tip.hidden = false;
+  const r = el.getBoundingClientRect(), base = host === document.body ? { left: -scrollX, top: -scrollY, width: innerWidth } : host.getBoundingClientRect();
+  tip.style.maxWidth = Math.min(340, base.width - 16) + 'px';
+  const x = Math.max(8, Math.min(r.left - base.left, base.width - tip.offsetWidth - 8));
+  tip.style.left = x + 'px'; tip.style.top = (r.bottom - base.top + 8) + 'px';
+  tip.style.setProperty('--ax', Math.max(8, Math.min(tip.offsetWidth - 20, r.left - base.left - x + Math.min(r.width / 2, 30) - 6)) + 'px');
+}
+function hideTip() { const t = HAS_DOM && $('#tip'); if (t) t.hidden = true; }
+function init() {
+  applyLang();
+  $('#pickT').value = localStamp(Date.now()).slice(0, 16);
+  tick(); setInterval(tick, 250);
+  $('#goBtn').onclick = () => { question = $('#qText').value.trim(); start(Date.now()); };
+  $('#pickBtn').onclick = () => { const t = parseStamp($('#pickT').value); if (!isNaN(t)) { question = $('#qText').value.trim(); start(t); } };
+  $('#prev').onclick = () => go(cur - 1);
+  $('#next').onclick = () => go(cur + 1);
+  $('#dots').onclick = e => { const b = e.target.closest('[data-step]'); if (b) go(+b.dataset.step); };
+  $('#story').onclick = e => {
+    if (e.target.closest('#tossBtn')) doToss();
+    else if (e.target.closest('#undoBtn')) { tosses.pop(); lastCoins = null; rebuild(); go(0); }
+    else if (e.target.closest('#retossBtn')) { tosses = []; lastCoins = null; rebuild(); go(0); }
+    else { const b = e.target.closest('[data-v]'); if (b) { addToss(null, +b.dataset.v); go(0); } }
+  };
+  $('#lang').onchange = e => {
+    LANG = e.target.value;
+    try { localStorage.setItem('learn-lang', LANG); } catch (_) {}
+    const u = new URL(location.href); u.searchParams.set('lang', LANG); setUrl(u);
+    applyLang();
+  };
+  $('#howBtn').onclick = () => $('#howDlg').showModal();
+  document.addEventListener('click', e => {
+    const t = e.target.closest('.term');
+    if (t) { showTip(t); return; }
+    if (!e.target.closest('#tip') || e.target.closest('.x')) hideTip();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') hideTip();
+    if (lockMs === null || (e.target.closest && e.target.closest('input, select, textarea, dialog[open]'))) return;
+    if (e.key === 'ArrowRight') go(cur + 1);
+    else if (e.key === 'ArrowLeft') go(cur - 1);
+    else if (e.key === ' ' && cur === 0 && !ready() && !e.target.closest('button')) { e.preventDefault(); doToss(); }
+    else if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('term')) showTip(e.target);
+  });
+  // A shared link (?t=…&y=…) reopens the same casting. The question is never put in the link.
+  const p = new URLSearchParams(location.search), t = parseStamp(p.get('t')), y = (p.get('y') || '').split('').map(Number).filter(v => v >= 6 && v <= 9).slice(0, 6);
+  if (!isNaN(t)) start(t, y, +p.get('step') || 0);
+  let seen = null;
+  try { seen = localStorage.getItem('ly-seen-how'); localStorage.setItem('ly-seen-how', '1'); } catch (_) {}
+  if (!seen) $('#howDlg').showModal();
+}
+
+if (typeof module !== 'undefined') module.exports = { HEX, TRI, setup, calendar, buildSteps, boardHtml, wrapHtml, tossStory, tossWork, GLOSS, setLang: l => { LANG = l; } };
+else init();
+</script>
+</body>
+</html>
