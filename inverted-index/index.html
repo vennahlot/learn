@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How search works: the inverted index · 搜索是怎么工作的：倒排索引</title>
+<meta name="description" content="An interactive, bilingual lesson: build an inverted index step by step and use it for AND, OR, phrase and ranked search.">
+<style>
+*{box-sizing:border-box}
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1f2633;--mute:#6b7280;--line:#e5e7eb;--acc:#2563eb;--hl:#fff4c2;--ok:#059669;--bad:#dc2626;--c1:#7c3aed;--c2:#0d9488;--c3:#d97706}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+.top{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.top h1{font-size:18px;margin:0 auto 0 0;line-height:1.3}
+.top a.home{text-decoration:none;color:var(--mute);font-size:20px;line-height:1}
+select,.btn{font:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.btn:disabled{opacity:.4;cursor:default}
+main{max-width:1180px;margin:0 auto;padding:16px 20px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+.stepper{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.dots{display:flex;gap:7px;flex-wrap:wrap;flex:1;align-items:center}
+.dot{width:12px;height:12px;border-radius:50%;background:#d1d5db;border:0;padding:0;cursor:pointer}
+.dot.done{background:#93c5fd}.dot.cur{background:var(--acc);transform:scale(1.35)}
+.kbd{color:var(--mute);font-size:12.5px}
+.story .n{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.story h2{margin:4px 0 8px;font-size:22px;line-height:1.3}
+.story p{margin:8px 0}
+.story ul{margin:6px 0;padding-left:20px}.story li{margin:4px 0}
+.tip-box{background:#eff6ff;border-left:4px solid var(--acc);border-radius:8px;padding:10px 14px;margin-top:10px}
+.kw{background:#fffbeb;border:1px solid #fcd34d;border-radius:5px;padding:0 5px;font-weight:700;white-space:nowrap}
+.panels{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:14px;align-items:start}
+.panel{border-top:4px solid var(--c);margin-bottom:0}
+.panel.hitp{box-shadow:0 0 0 2px #fde68a}
+.sec-title{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin-bottom:8px}
+.none{color:#9ca3af;font-style:italic;font-size:14px}
+.doc{padding:8px 10px;border-radius:10px;border:1px solid var(--line);margin-bottom:8px;transition:background .3s}
+.doc .id{display:inline-block;font-weight:800;color:var(--c1);margin-right:6px}
+.doc.cur{background:var(--hl);border-color:#facc15}
+.doc.hit{border-color:var(--ok);background:#ecfdf5}
+.doc.miss{opacity:.5}
+.doc.del .txt{text-decoration:line-through;opacity:.5}
+.doc .badge{float:right;font-weight:800;margin-left:6px}
+.doc .badge.ok{color:var(--ok)}.doc .badge.bad{color:var(--bad)}.doc .badge.del{color:var(--mute);font-size:12px;font-weight:600}
+.doc.new{animation:fadein .6s ease both}
+mark{background:#fde68a;border-radius:3px;padding:0 1px;color:inherit}
+.toks{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tok{font-size:13.5px;border:1px solid #c7d2fe;background:#eef2ff;border-radius:6px;padding:1px 6px;animation:pop .4s ease both}
+.tok small{color:var(--mute);margin-left:3px;font-size:11px}
+.tok.stop{text-decoration:line-through;opacity:.45;background:#f3f4f6;border-color:var(--line)}
+table.ix{width:100%;border-collapse:collapse}
+.ix th{font-size:12px;color:var(--mute);text-align:left;font-weight:600;padding:2px 4px;border-bottom:1px solid var(--line)}
+.ix td{border-bottom:1px solid var(--line);padding:5px 4px;vertical-align:top;font-size:14px}
+.ix td.t{font-weight:700;white-space:nowrap}
+.ix td.df{color:var(--mute);text-align:center;width:30px}
+.ix tr.hl td{background:var(--hl)}
+.ix tr.new td{animation:flash 1.4s ease .2s both}
+.pg{display:inline-block;margin:1px 3px 2px 0;padding:0 6px;border-radius:6px;background:#f0fdfa;border:1px solid #99f6e4;font-size:13px;white-space:nowrap}
+.pg small{color:var(--mute);margin-left:3px;font-size:11px}
+.pg.del{text-decoration:line-through;opacity:.45}
+.pg.on{background:#fde68a;border-color:#f59e0b}
+.pg.new{animation:pop .5s ease .3s both;background:#dcfce7;border-color:#22c55e}
+.qbox{font-size:17px;font-weight:700;background:#fffbeb;border:1px dashed var(--c3);border-radius:8px;padding:6px 10px;margin-bottom:10px}
+.qbox .mode{font-size:12px;font-weight:600;color:var(--c3);margin-left:6px;white-space:nowrap}
+.plist{margin:10px 0 18px}
+.plist .lab{font-weight:700;margin-bottom:4px;font-size:14px}
+.cells{display:flex;gap:5px;flex-wrap:wrap}
+.cell{position:relative;min-width:40px;text-align:center;padding:4px 6px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px}
+.cell.ptr{border-color:var(--acc);box-shadow:0 0 0 2px #bfdbfe;font-weight:800}
+.cell.ptr::after{content:"▲";position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);color:var(--acc);font-size:11px}
+.cell.match{background:#d1fae5;border-color:var(--ok)}
+.cell.gone{opacity:.35;text-decoration:line-through}
+.cmp{font-size:14px;margin:8px 0;padding:8px 10px;background:#f9fafb;border-radius:8px;border:1px solid var(--line)}
+.res{font-weight:700;margin-top:8px}
+table.sc{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0}
+.sc th,.sc td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:center}
+.sc th{font-size:12px;color:var(--mute);font-weight:600}
+.sc td:first-child,.sc th:first-child{text-align:left}
+.sc tr.top1 td{background:#ecfdf5;font-weight:700}
+.big{font-size:22px;font-weight:800}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.vs div{border-radius:10px;padding:10px;text-align:center;border:1px solid var(--line)}
+.vs .slow{background:#fef2f2}.vs .fast{background:#ecfdf5}
+.ok{color:var(--ok);font-weight:800;margin-right:4px}
+.bad{color:var(--bad);font-weight:800;margin-right:4px}
+.try{border-top:4px solid var(--acc)}
+.try input{font:inherit;font-size:16px;padding:9px 12px;border:1px solid #cbd5e1;border-radius:10px;width:100%}
+.ex{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px}
+.ex button{font:inherit;font-size:13.5px;padding:4px 11px;border-radius:99px;border:1px solid var(--line);background:#f9fafb;cursor:pointer}
+.ex button:hover{border-color:var(--acc);color:var(--acc)}
+.tryout{margin-top:10px}
+.tryout .how{font-size:14px;color:var(--mute);margin:6px 0}
+.score{float:right;font-size:12px;color:var(--mute);margin-left:6px}
+@keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
+@keyframes flash{0%{background:#bbf7d0}100%{background:transparent}}
+@keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1}}
+.term{border-bottom:1.5px dotted #6b7280;cursor:help}
+.term:hover{color:var(--acc);border-bottom-color:var(--acc)}
+#tip{position:absolute;z-index:50;max-width:340px;background:#1f2633;color:#fff;border-radius:10px;padding:10px 26px 10px 14px;font-size:13.5px;line-height:1.45;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#tip b{display:block;margin-bottom:3px;font-size:14px}
+#tip::before{content:"";position:absolute;top:-6px;left:var(--ax,20px);border:6px solid transparent;border-top:0;border-bottom-color:#1f2633}
+#tip .x{position:absolute;right:9px;top:5px;cursor:pointer;opacity:.7}
+dialog{border:none;border-radius:14px;padding:0;width:min(560px,92vw);box-shadow:0 20px 50px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(15,23,42,.45)}
+.dlg-h{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:16px}
+.dlg-b{padding:14px 18px;max-height:65vh;overflow:auto}
+.dlg-b p{margin:8px 0}
+.dlg-f{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.legend{display:flex;gap:8px;margin:10px 0}
+.legend div{flex:1;border-radius:10px;padding:8px 10px;color:#fff;font-size:13px}
+select.lang{min-width:0}
+.pos,.stabs{display:none}
+@media (max-width:980px){.panels{grid-template-columns:1fr}}
+/* ---------- phones ---------- */
+@media (max-width:700px){
+  body{font-size:16px}
+  .top{position:static;padding:10px 12px;gap:8px}
+  .top h1{font-size:16px;flex:1 1 0;min-width:0;margin:0}
+  select.lang{padding:6px}
+  .top label{order:2;flex:1 1 100%;display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .top label select{flex:1;min-width:0}
+  .top .btn{order:3;flex:1 1 0;padding:8px 4px;font-size:14px}
+  select{font-size:16px}
+  main{padding:12px 10px calc(90px + env(safe-area-inset-bottom))}
+  .card{padding:14px}
+  .stepper{position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.07);padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+  .stepper .btn{flex:1;padding:13px 8px;font-size:17px;border-radius:10px}
+  .dots,.stepper .kbd{display:none}
+  .pos{display:block;font-size:14px;color:var(--mute);white-space:nowrap;text-align:center}
+  .story h2{font-size:20px}
+  .tip-box{padding:10px 12px}
+  .stabs{display:flex;gap:6px;margin-bottom:10px}
+  .stabs button{flex:1 1 0;font:inherit;font-size:14px;line-height:1.25;padding:9px 4px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--mute);border-top:4px solid var(--c);position:relative}
+  .stabs button.on{color:var(--ink);font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  .stabs .hitdot{position:absolute;top:-7px;right:-3px;width:12px;height:12px;border-radius:50%;background:#facc15;border:2px solid #fff}
+  .panels{display:block}
+  .panels .panel{display:none}
+  .panels .panel.on{display:block}
+  .panel.hitp{box-shadow:none}
+  .ix td{font-size:15px}
+  .pg{font-size:14px}
+  .legend{flex-direction:column}
+  #tip{font-size:15px}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="home" href="../" title="All lessons / 全部课程">⌂</a>
+  <h1 data-t="h1">How search works: the inverted index</h1>
+  <label><span data-t="scenario">Scenario:</span> <select id="scen"></select></label>
+  <button class="btn" id="howBtn" data-t="how">? How to read this</button>
+  <select id="lang" class="lang" aria-label="Language / 语言"><option value="en">🌐 English</option><option value="zh">🌐 简体中文</option></select>
+</div>
+<main>
+  <div class="stepper">
+    <button class="btn" id="prev" data-t="prev">← Back</button>
+    <div class="dots" id="dots"></div>
+    <span class="kbd" data-t="keys">← → keys work too</span>
+    <span class="pos" id="pos"></span>
+    <button class="btn primary" id="next">Next →</button>
+  </div>
+  <div class="card story" id="story"></div>
+  <div class="stabs" id="stabs"></div>
+  <div class="panels" id="panels">
+    <div class="card panel" data-k="docs" style="--c:var(--c1)"><div class="sec-title" data-t="docsTitle">Documents</div><div id="docs"></div></div>
+    <div class="card panel" data-k="index" style="--c:var(--c2)"><div class="sec-title" data-t="indexTitle">Inverted index</div><div id="index"></div></div>
+    <div class="card panel" data-k="query" style="--c:var(--c3)"><div class="sec-title" data-t="queryTitle">Search</div><div id="query"></div></div>
+  </div>
+  <div class="card try" style="margin-top:14px">
+    <div class="sec-title" data-t="tryTitle">Try your own search</div>
+    <div class="kbd" data-t="tryHint" style="font-size:14px"></div>
+    <div class="ex" id="examples"></div>
+    <input id="tryq" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search">
+    <div class="tryout" id="tryout"></div>
+  </div>
+</main>
+
+<div id="tip" hidden></div>
+
+<dialog id="howDlg"><form method="dialog">
+  <div class="dlg-h" data-t="howTitle">How to read this page</div>
+  <div class="dlg-b" data-t="howBody"></div>
+  <div class="dlg-f"><button class="btn primary" value="ok" data-t="gotIt">Got it</button></div>
+</form></dialog>
+
+<script>
+'use strict';
+// ---------- language ----------
+const HAS_DOM = typeof document !== 'undefined';
+let LANG = (() => {
+  if (!HAS_DOM) return 'en';
+  const q = new URLSearchParams(location.search).get('lang');
+  if (q === 'en' || q === 'zh') return q;
+  try { const s = localStorage.getItem('learn-lang'); if (s === 'en' || s === 'zh') return s; } catch (e) {}
+  return /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
+})();
+const tx = (en, zh) => LANG === 'zh' ? zh : en;
+const L = a => a[LANG === 'zh' ? 1 : 0];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+const UI = {
+  h1: ['How search works: the inverted index', '搜索是怎么工作的：倒排索引'],
+  scenario: ['Scenario:', '场景：'],
+  how: ['? How to read this', '? 怎么看这一页'],
+  prev: ['← Back', '← 上一步'],
+  keys: ['← → keys work too', '也可以用 ← → 键'],
+  docsTitle: ['Documents', '文档'],
+  indexTitle: ['Inverted index', '倒排索引'],
+  queryTitle: ['Search', '搜索'],
+  tryTitle: ['Try your own search', '自己搜一搜'],
+  tryHint: ['Searches the 4 example documents D1–D4. Words with spaces = AND. Use OR for either word. Put words in quotes for a phrase.',
+    '在 D1–D4 这 4 篇示例文档里搜索。用空格隔开 = 同时包含（AND）；用“或”= 任一个（OR）；加引号 = 词组。'],
+  howTitle: ['How to read this page', '怎么看这一页'],
+  gotIt: ['Got it', '知道了'],
+  howBody: [`<p>A search engine cannot read every page each time you search. Instead, it builds an <b>inverted index</b> ahead of time: for every word, a list of the documents that contain it. This page builds one, step by step, then uses it.</p>
+<div class="legend"><div style="background:var(--c1)"><b>Documents</b><br>the texts being searched</div><div style="background:var(--c2)"><b>Inverted index</b><br>word → list of documents</div><div style="background:var(--c3)"><b>Search</b><br>what the engine does with your words</div></div>
+<p>Press <b>Next</b> to go one step at a time. What changed in the step is highlighted in yellow. On a phone, use the three tabs to switch panels; a yellow dot marks a tab that changed.</p>
+<p>Tap any <span class="term" data-term="dotted" tabindex="0">underlined word</span> to see what it means. Pick another scenario from the menu at the top, and type your own search in the box at the bottom.</p>`,
+    `<p>搜索引擎不可能在每次搜索时把所有网页都读一遍。它会提前建好一份<b>倒排索引</b>：每个词对应一张“包含这个词的文档”清单。这一页一步一步地建一份索引，然后用它来搜索。</p>
+<div class="legend"><div style="background:var(--c1)"><b>文档</b><br>被搜索的文字</div><div style="background:var(--c2)"><b>倒排索引</b><br>词 → 文档清单</div><div style="background:var(--c3)"><b>搜索</b><br>搜索引擎拿你的词做了什么</div></div>
+<p>按<b>下一步</b>一步一步往下看。每一步中变化的地方用黄色标出。在手机上，用三个标签切换面板；有黄点的标签表示那里有变化。</p>
+<p>点击任何<span class="term" data-term="dotted" tabindex="0">带下划线的词</span>查看它的意思。可以从顶部菜单换一个场景，也可以在页面最下面自己输入搜索词。</p>`],
+};
+const U = k => L(UI[k]);
+
+// ---------- glossary ----------
+const GLOSS = {
+  en: {
+    dotted: ['Like this', 'Tap any underlined word to see what it means. Tap anywhere else or press Esc to close.'],
+    'inverted-index': ['Inverted index', 'A table that goes from each word to the documents containing it. A document goes the other way, from the document to its words, which is why this is called "inverted". It works like the index at the back of a book.'],
+    document: ['Document', 'One thing a search can return: a web page, an email, a product, a note. Each one gets a number, its document ID.'],
+    'doc-id': ['Document ID', 'The number given to each document (D1, D2, …). The index stores these small numbers, not copies of the documents.'],
+    tokenize: ['Tokenize', 'Cut text into separate words (tokens). In English, spaces and punctuation show where words end.'],
+    segmentation: ['Word segmentation', 'Chinese is written without spaces, so a program has to decide where each word starts and ends, using a dictionary or a trained model. A simpler trick is to index every pair of neighbouring characters ("bigrams").'],
+    normalize: ['Normalize', 'Make different forms of the same word look identical before indexing, e.g. "The" → "the". Real engines also turn "dogs" into "dog" (stemming).'],
+    stopword: ['Stop word', 'A very common word such as "the", "a" or "and", found in almost every text, so it does not help find anything. Many indexes skip it.'],
+    term: ['Term', 'A word after clean-up, exactly as it is stored in the index.'],
+    dictionary: ['Dictionary', 'The sorted list of every term in the index (the left column). Because it is sorted, a term can be found in a few jumps, like looking up a word in a paper dictionary.'],
+    postings: ['Postings list', 'For one term: the list of documents that contain it, sorted by document ID, often with the positions where it appears.'],
+    position: ['Position', 'Where a word sits in a document: the first word is position 0, the next is 1, and so on. Positions make phrase search possible.'],
+    df: ['Document frequency (df)', 'How many documents contain the term, which is the length of its postings list.'],
+    tf: ['Term frequency (tf)', 'How many times a term appears in one document.'],
+    idf: ['Inverse document frequency (idf)', 'How rare a term is: log(N ÷ df), where N is the number of documents. A word that is in every document gets 0; a rare word gets a high number.'],
+    'tf-idf': ['tf × idf', 'A simple relevance score: a document scores higher when it uses the search words often (tf) and those words are rare (idf). The scores of all search words are added up.'],
+    bm25: ['BM25', 'The ranking formula most search engines use today. It is tf × idf with two fixes: repeating a word helps less and less, and long documents do not win just for being long.'],
+    intersect: ['AND (intersection)', 'Keep only the documents that are in every list.'],
+    union: ['OR (union)', 'Keep the documents that are in any of the lists.'],
+    phrase: ['Phrase search', 'Search for words that stand next to each other, in that order. Usually written in quotes: "red cat".'],
+    tombstone: ['Deletion mark', 'Instead of removing a deleted document from every list right away, the index keeps a short list of deleted IDs and hides them from results.'],
+    merge: ['Merge', 'A background clean-up that rewrites postings lists without the deleted documents and joins small pieces of the index into bigger ones.'],
+    'full-scan': ['Full scan', 'Reading every word of every document to answer a search. Simple, but the work grows with the size of the whole collection.'],
+    'binary-search': ['Binary search', 'Finding something in a sorted list by looking in the middle and throwing away the half that cannot contain it, again and again. A million terms need only about 20 looks.'],
+  },
+  zh: {
+    dotted: ['就像这样', '点击任何带下划线的词，查看它的意思。点击其他地方或按 Esc 关闭。'],
+    'inverted-index': ['倒排索引', '一张从“词”查到“包含这个词的文档”的表。文档本身是反过来的：从文档查到它有哪些词，所以叫“倒排”。它就像书后面的索引。'],
+    document: ['文档', '搜索能返回的一个东西：一个网页、一封邮件、一件商品、一条笔记。每个文档有一个编号，叫文档编号。'],
+    'doc-id': ['文档编号', '给每个文档的号码（D1、D2……）。索引里存的是这些小号码，而不是文档的副本。'],
+    tokenize: ['切词', '把一段文字切成一个个单独的词（也叫分词）。英文靠空格和标点就能知道词在哪里结束。'],
+    segmentation: ['中文分词', '中文词与词之间没有空格，程序要借助词典或训练好的模型来判断每个词从哪里开始、到哪里结束。更简单的办法是把每两个相邻的字都当成一个词来索引（二元切分）。'],
+    normalize: ['规范化', '把同一个词的不同写法变成一样，再放进索引。比如英文把 “The” 变成 “the”，把 “dogs” 变成 “dog”。'],
+    stopword: ['停用词', '非常常见的词，比如“的”“在”“也”，几乎每段文字都有，对找东西没有帮助。很多索引直接跳过它们。'],
+    term: ['词项', '清理之后、真正存进索引的词。'],
+    dictionary: ['词典', '索引里所有词项排好序的清单（左边那一列）。因为排好了序，几步就能找到一个词，就像查纸质词典一样。'],
+    postings: ['倒排列表', '某个词项对应的文档清单，按文档编号从小到大排列，通常还记着它在文档里出现的位置。'],
+    position: ['位置', '一个词在文档里排第几：第一个词是位置 0，下一个是 1，依此类推。有了位置才能做词组搜索。'],
+    df: ['文档频率（df）', '有多少篇文档包含这个词项，也就是它的倒排列表有多长。'],
+    tf: ['词频（tf）', '一个词项在一篇文档里出现了几次。'],
+    idf: ['逆文档频率（idf）', '一个词有多“稀有”：log(N ÷ df)，N 是文档总数。每篇文档都有的词得 0 分；越少见的词分越高。'],
+    'tf-idf': ['tf × idf', '一个简单的相关度分数：文档里搜索词出现得越多（tf），这些词越少见（idf），分数越高。把每个搜索词的分数加起来。'],
+    bm25: ['BM25', '今天大多数搜索引擎用的排序公式。它就是 tf × idf 加上两点修正：一个词重复得越多，加分越少；长文档不会仅仅因为长而占便宜。'],
+    intersect: ['AND（交集）', '只保留每张清单里都有的文档。'],
+    union: ['OR（并集）', '保留任何一张清单里有的文档。'],
+    phrase: ['词组搜索', '搜索按顺序紧挨在一起的几个词，通常加引号：“红色的猫”。'],
+    tombstone: ['删除标记', '删除文档时不马上把它从每张清单里抹掉，而是记在一张“已删除”的小清单上，搜索结果里把它藏起来。'],
+    merge: ['合并', '后台的整理工作：重写倒排列表、去掉已删除的文档，并把索引的小块并成大块。'],
+    'full-scan': ['全文扫描', '为了回答一次搜索，把每篇文档的每个词都读一遍。简单，但工作量随着全部文档的数量增长。'],
+    'binary-search': ['二分查找', '在排好序的清单里找东西：先看正中间，扔掉不可能包含它的那一半，反复进行。一百万个词只要看大约 20 次。'],
+  },
+};
+const G = () => GLOSS[LANG];
+const lc = t => LANG === 'zh' || /^[A-Z]{2}|^BM|^AND|^OR/.test(t) ? t : t[0].toLowerCase() + t.slice(1);
+const T = (k, txt) => `<span class="term" data-term="${k}" tabindex="0">${txt || lc(G()[k][0])}</span>`;
+// ---------- the example documents ----------
+// English is split on letters. Chinese is stored already segmented (one array item per word), so every browser gets the same words.
+const DOCS = [
+  { id: 1, en: 'The red cat sleeps in the sun.', zh: ['红色', '的', '猫', '在', '阳光', '下', '睡觉', '。'] },
+  { id: 2, en: 'The dog chases the cat. The cat runs.', zh: ['狗', '追', '猫', '，', '猫', '跑', '了', '。'] },
+  { id: 3, en: 'A red fox jumps over the lazy dog.', zh: ['红色', '的', '狐狸', '跳过', '懒', '狗', '。'] },
+  { id: 4, en: 'The cat plays with a red ball.', zh: ['猫', '在', '玩', '红色', '的', '球', '。'] },
+  { id: 5, en: 'A small dog naps in the sun.', zh: ['小', '狗', '在', '阳光', '下', '午睡', '。'] },
+];
+const BASE = [1, 2, 3, 4];
+const STOP = { en: new Set(['the', 'a', 'an', 'in', 'on', 'with', 'over', 'and', 'of', 'to', 'is', 'my']), zh: new Set(['的', '了', '在', '着', '也', '和']) };
+const PUNCT = /^[\p{P}\s]+$/u;
+const WORD = { red: ['red', '红色'], cat: ['cat', '猫'], dog: ['dog', '狗'], fox: ['fox', '狐狸'], ball: ['ball', '球'] };
+const w = k => L(WORD[k]);
+const isZh = () => LANG === 'zh';
+const docById = id => DOCS.find(d => d.id === id);
+const Dn = d => `D${d}`;
+const kw = s => `<span class="kw">${esc(s)}</span>`;
+
+// ---------- the engine ----------
+function norm(t) {
+  if (isZh()) return STOP.zh.has(t) ? null : t;
+  t = t.toLowerCase();
+  if (STOP.en.has(t)) return null;
+  return t.length > 3 && /[^s]s$/.test(t) ? t.slice(0, -1) : t;   // sleeps → sleep
+}
+// Every word of a document with its position; term is null for a stop word.
+function tokens(d) {
+  const raw = isZh() ? d.zh.filter(t => !PUNCT.test(t)) : d.en.match(/[A-Za-z]+/g);
+  return raw.map((t, pos) => ({ w: t, pos, term: norm(t) }));
+}
+const _coll = {};
+const cmpTerm = (a, b) => (_coll[LANG] || (_coll[LANG] = new Intl.Collator(isZh() ? 'zh-Hans-u-co-pinyin' : 'en'))).compare(a, b);
+// term → [{d, pos:[…]}], terms sorted, each list sorted by document ID
+function buildIndex(ids) {
+  const m = new Map();
+  for (const id of [...ids].sort((a, b) => a - b)) for (const t of tokens(docById(id))) {
+    if (!t.term) continue;
+    if (!m.has(t.term)) m.set(t.term, []);
+    const pl = m.get(t.term); let p = pl[pl.length - 1];
+    if (!p || p.d !== id) pl.push(p = { d: id, pos: [] });
+    p.pos.push(t.pos);
+  }
+  return new Map([...m].sort((a, b) => cmpTerm(a[0], b[0])));
+}
+const docsOf = (ix, term) => (ix.get(term) || []).map(p => p.d);
+// Walk two sorted lists with one finger each.
+function intersectTrace(a, b) {
+  const tr = []; let i = 0, j = 0;
+  while (i < a.length && j < b.length) {
+    const act = a[i] === b[j] ? 'match' : a[i] < b[j] ? 'a' : 'b';
+    tr.push({ i, j, act });
+    if (act === 'match') { i++; j++; } else if (act === 'a') i++; else j++;
+  }
+  return tr;
+}
+const intersect = (a, b) => intersectTrace(a, b).filter(s => s.act === 'match').map(s => a[s.i]);
+const union = (a, b) => [...new Set([...a, ...b])].sort((x, y) => x - y);
+// parts: [{term, off}], off = place in the phrase (stop words keep their place)
+function phraseHits(ix, parts) {
+  return parts.map(p => docsOf(ix, p.term)).reduce(intersect).filter(d => {
+    const P = parts.map(p => ix.get(p.term).find(x => x.d === d).pos);
+    return P[0].some(s => parts.every((p, k) => P[k].includes(s + p.off - parts[0].off)));
+  });
+}
+const tfOf = (ix, t, d) => ((ix.get(t) || []).find(p => p.d === d) || { pos: [] }).pos.length;
+const idfOf = (ix, t, N) => Math.log2(N / docsOf(ix, t).length);
+// tf × idf, added up over the search words, best first
+function rank(ix, terms, N) {
+  const sc = new Map();
+  for (const t of terms) { if (!ix.has(t)) continue; const idf = idfOf(ix, t, N); for (const p of ix.get(t)) sc.set(p.d, (sc.get(p.d) || 0) + p.pos.length * idf); }
+  return [...sc].map(([d, s]) => ({ d, s })).sort((a, b) => b.s - a.s || a.d - b.d);
+}
+function bsearch(keys, k) {
+  const probes = []; let lo = 0, hi = keys.length - 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1, c = cmpTerm(keys[mid], k);
+    probes.push({ key: keys[mid], c });
+    if (!c) break; if (c < 0) lo = mid + 1; else hi = mid - 1;
+  }
+  return probes;
+}
+
+// ---------- reading a typed search ----------
+// Chinese: longest match against the words the documents use, else one character.
+function qTokens(s, start = 0) {
+  const out = []; let pos = start;
+  if (isZh()) {
+    const vocab = new Set(DOCS.flatMap(d => d.zh)), max = Math.max(...[...vocab].map(v => v.length));
+    for (const run of s.match(/\p{Script=Han}+|[A-Za-z]+/gu) || []) {
+      if (/^[A-Za-z]/.test(run)) { out.push({ w: run, off: pos++ }); continue; }
+      for (let i = 0; i < run.length;) {
+        let n = Math.min(max, run.length - i);
+        while (n > 1 && !vocab.has(run.substr(i, n))) n--;
+        out.push({ w: run.substr(i, n), off: pos++ }); i += n;
+      }
+    }
+  } else for (const t of s.match(/[A-Za-z]+/g) || []) out.push({ w: t, off: pos++ });
+  return out.map(t => ({ ...t, term: norm(t.w) }));
+}
+function parseQuery(s) {
+  s = (s || '').trim(); if (!s) return null;
+  if (s.length > 2 && /^["“「『]/.test(s) && /["”」』]$/.test(s)) return { mode: 'phrase', toks: qTokens(s.slice(1, -1)) };
+  const parts = s.split(/\s+OR\s+|\s+or\s+|\s*或\s*|\s*\|\s*/).filter(Boolean);
+  if (parts.length > 1) return { mode: 'or', toks: parts.flatMap(p => qTokens(p)) };
+  return { mode: 'and', toks: qTokens(s) };
+}
+function runQuery(q, ix = buildIndex(BASE), N = BASE.length) {
+  const terms = q.toks.filter(t => t.term);
+  if (!terms.length) return { hits: [], terms };
+  const lists = terms.map(t => docsOf(ix, t.term));
+  const ds = q.mode === 'or' ? lists.reduce(union) : q.mode === 'phrase' ? phraseHits(ix, terms) : lists.reduce(intersect);
+  const sc = new Map(rank(ix, [...new Set(terms.map(t => t.term))], N).map(r => [r.d, r.s]));
+  return { terms, hits: ds.map(d => ({ d, s: sc.get(d) || 0 })).sort((a, b) => b.s - a.s || a.d - b.d) };
+}
+// ---------- small HTML pieces for the Search panel ----------
+const qbox = (q, mode) => `<div class="qbox">🔍 ${esc(q)}${mode ? `<span class="mode">${mode}</span>` : ''}</div>`;
+function plist(label, ids, o = {}) {
+  const has = (k, d) => o[k] && o[k].has(d);
+  const cells = ids.length ? ids.map((d, k) => `<span class="cell${k === o.ptr ? ' ptr' : ''}${has('match', d) ? ' match' : ''}${has('gone', d) ? ' gone' : ''}">${Dn(d)}</span>`).join('') : `<span class="none">${tx('empty', '空')}</span>`;
+  return `<div class="plist"><div class="lab">${label}</div><div class="cells">${cells}</div></div>`;
+}
+const listOf = t => tx(`${t}’s list`, `“${t}”的清单`);
+const resLine = ids => `<div class="res">${tx('Result', '结果')}: ${ids.length ? ids.map(Dn).join(tx(', ', '、')) : tx('nothing', '无')}</div>`;
+const checks = items => items.map(([ok, t]) => `<p><span class="${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✗'}</span>${t}</p>`).join('');
+const others = ids => BASE.filter(d => !ids.includes(d));
+
+// ---------- scenarios ----------
+// A step: {title, short, story, takeaway, docs:{ids, cur, toks, norm, hit, miss, del, mark, isNew}, idx:{ids, newD, hl, on, del, merged}|null, q, focus, changed}
+const SCENARIOS = [
+{ id: 'build', name: ['Build the index', '建立索引'],
+  intro: ['A tiny search engine holds four short documents, D1 to D4. Someone searches for a word. How can it find the documents with that word without reading them all?',
+    '一个小小的搜索引擎里有四篇短文档，D1 到 D4。有人搜索一个词。怎样才能不把文档全读一遍，就找到包含这个词的文档？'],
+  start: () => ({ docs: { ids: BASE }, idx: null, focus: 'docs',
+    q: qbox(w('cat')) + `<p class="none">${tx('Which documents have this word?', '哪些文档有这个词？')}</p>`,
+    takeaway: tx(`Reading every document for every search is a ${T('full-scan')}: fine for 4 documents, hopeless for billions of web pages. The trick is to read everything <b>once</b>, ahead of time, and save what was found as an ${T('inverted-index')}.`,
+      `每次搜索都把所有文档读一遍，叫${T('full-scan')}：4 篇没问题，几十亿个网页就不可能了。窍门是提前把所有文档<b>读一次</b>，把读到的结果存成一份${T('inverted-index')}。`) }),
+  steps: () => {
+    const full = buildIndex(BASE), d1 = [...buildIndex([1]).keys()], C = w('cat'), cat2 = buildIndex([2]).get(C)[0].pos;
+    const probes = bsearch([...full.keys()], C), catDocs = docsOf(full, C);
+    const stops1 = [...new Set(tokens(docById(1)).filter(t => !t.term).map(t => t.w.toLowerCase()))];
+    const only1 = [...full].filter(([, pl]) => pl.length === 1).map(([t]) => t);
+    return [
+      { title: tx('Cut D1 into words', '把 D1 切成词'), short: tx('Tokenize', '切词'),
+        story: tx(`Start with D1. First ${T('tokenize', 'cut it into words')}, and number each word by its ${T('position')}: the first word is 0, the next is 1, and so on.`,
+          `从 D1 开始。先把它${T('tokenize', '切成一个个词')}，并给每个词编上${T('position')}：第一个词是 0，下一个是 1，依此类推。`),
+        takeaway: tx(`English puts spaces between words, so this is easy. Chinese has no spaces, so a Chinese search engine first needs ${T('segmentation')}. Switch to 中文 at the top to see it.`,
+          `中文词与词之间没有空格，所以程序要先做${T('segmentation')}：“红色的猫在阳光下睡觉”要切成 红色 | 的 | 猫 | 在 | 阳光 | 下 | 睡觉。英文靠空格就能切开。`),
+        docs: { ids: BASE, cur: 1, toks: 1 }, idx: null, focus: 'docs', changed: ['docs'] },
+      { title: tx('Clean up the words', '清理这些词'), short: tx('Clean up', '清理'),
+        story: tx(`Next, ${T('normalize')} them: make every word lower case, drop ${T('stopword', 'stop words')} such as ${stops1.map(kw).join(' ')}, and cut a plural “s”, so that “sleeps” and “sleep” become the same word.`,
+          `接着${T('normalize')}：去掉 ${stops1.map(kw).join(' ')} 这样的${T('stopword')}。中文没有大小写，也没有复数，所以这一步比英文简单。`),
+        takeaway: tx(`What is left are the ${T('term', 'terms')} that go into the index. The position numbers do not change, so the original word order is still known.`,
+          `剩下的就是要放进索引的${T('term')}。位置编号不变，所以原来的词序还记得。`),
+        docs: { ids: BASE, cur: 1, toks: 1, norm: true }, idx: null, focus: 'docs', changed: ['docs'] },
+      { title: tx('Write D1 into the index', '把 D1 写进索引'), short: tx('Add D1', '加入 D1'),
+        story: tx(`For each term, write D1 and the positions into that term’s list. D1 has ${d1.length} terms, so the index now has ${d1.length} rows: ${d1.map(kw).join(' ')}.`,
+          `每个词项都在自己的清单上记下 D1 和位置。D1 有 ${d1.length} 个词项，所以索引现在有 ${d1.length} 行：${d1.map(kw).join(' ')}。`),
+        takeaway: tx(`This is the “inverted” part. The document says “D1 has these words”. The index turns it around: “${w('red')} → D1”, “${C} → D1”. Each row’s list is called a ${T('postings')}.`,
+          `这就是“倒排”的意思。文档说的是“D1 里有这些词”，索引把它倒过来：“${w('red')} → D1”“${C} → D1”。每一行的清单叫${T('postings')}。`),
+        docs: { ids: BASE, cur: 1, mark: d1 }, idx: { ids: [1], newD: [1] }, focus: 'index', changed: ['docs', 'index'] },
+      { title: tx('Add D2', '加入 D2'), short: tx('Add D2', '加入 D2'),
+        story: tx(`D2 goes through the same steps. ${kw(C)} appears twice in D2 (positions ${cat2.join(' and ')}), but D2 goes into its list only once, with both positions. New terms get new rows; terms already there just get D2 added at the end.`,
+          `D2 走一遍同样的步骤。${kw(C)} 在 D2 里出现了两次（位置 ${cat2.join(' 和 ')}），但 D2 只在它的清单上记一次，带上两个位置。新词项加一行；已有的词项只在末尾加上 D2。`),
+        takeaway: tx(`New documents get bigger numbers, so they always land at the end of a list, and every list stays sorted by ${T('doc-id')} with no extra work. The next scenario shows why sorted lists matter.`,
+          `新文档的编号更大，所以总是加在清单的末尾，每张清单自然按${T('doc-id')}排好了序，不用额外的工作。下一个场景会说明排序为什么重要。`),
+        docs: { ids: BASE, cur: 2, toks: 2, norm: true }, idx: { ids: [1, 2], newD: [2] }, focus: 'index', changed: ['docs', 'index'] },
+      { title: tx('Add D3 and D4', '加入 D3 和 D4'), short: tx('Add D3, D4', '加入 D3、D4'),
+        story: tx(`D3 and D4 are added the same way. The index is finished: ${full.size} terms, each with its list of documents. The sorted column of terms on the left is the ${T('dictionary')}.`,
+          `D3 和 D4 也这样加进去。索引完成了：${full.size} 个词项，每个都有自己的文档清单。左边那一列排好序的词项叫${T('dictionary')}（中文按拼音排序）。`),
+        takeaway: tx(`The ${T('df', 'df')} column counts the documents in each list. ${kw(w('red'))} and ${kw(C)} are in 3 of the 4 documents, while ${only1.length} terms, such as ${kw(w('fox'))}, are in only one. Rare words will matter when results are ranked.`,
+          `${T('df', 'df')} 一列数的是每张清单里有几篇文档。${kw(w('red'))} 和 ${kw(C)} 出现在 4 篇里的 3 篇，而 ${kw(w('fox'))} 等 ${only1.length} 个词项只出现在一篇里。排序结果时，稀有的词更重要。`),
+        docs: { ids: BASE, cur: [3, 4] }, idx: { ids: BASE, newD: [3, 4] }, focus: 'index', changed: ['docs', 'index'] },
+      { title: tx(`Search for “${C}”`, `搜索“${C}”`), short: tx('Look up', '查找'),
+        story: tx(`Now a search for ${kw(C)}. The dictionary is sorted, so the engine does not read it from the top: it looks in the middle, sees whether ${kw(C)} comes before or after, and throws half away (${T('binary-search')}). Here it took ${probes.length} looks. Then it reads the list: ${catDocs.map(Dn).join(', ')}.`,
+          `现在搜索 ${kw(C)}。词典是排好序的，所以不用从头读：先看正中间，判断 ${kw(C)} 在它前面还是后面，扔掉一半（${T('binary-search')}）。这里看了 ${probes.length} 次就找到了。然后读出它的清单：${catDocs.map(Dn).join('、')}。`),
+        takeaway: tx('Not a single document was read to answer this search. Even with a million different words, finding one takes about 20 looks, and the answer is already written in its list.',
+          '回答这次搜索时，一篇文档都没有读。即使有一百万个不同的词，找到一个也只要看大约 20 次，答案早就写在它的清单里了。'),
+        docs: { ids: BASE, hit: catDocs, miss: others(catDocs), mark: [C] }, idx: { ids: BASE, hl: [C], on: catDocs.map(d => [C, d]) },
+        q: qbox(C) + probes.map((p, k) => `<div class="cmp">${tx(`Look ${k + 1}`, `第 ${k + 1} 次`)}: ${kw(p.key)} ${!p.c ? tx('— found it ✓', '—— 找到了 ✓') : p.c < 0 ? tx(`is before “${C}” → look later in the list`, `排在“${C}”前面 → 往后找`) : tx(`is after “${C}” → look earlier`, `排在“${C}”后面 → 往前找`)}</div>`).join('')
+          + plist(listOf(C), catDocs, { match: new Set(catDocs) }) + resLine(catDocs),
+        focus: 'query', changed: ['docs', 'index', 'query'] },
+    ];
+  },
+  wrap: () => checks([
+    [1, tx('An index is built by reading each document once: cut it into words, clean them up, and add the document to each word’s list.', '建索引时每篇文档只读一次：切词、清理，再把文档记到每个词的清单上。')],
+    [1, tx('Each list is sorted by document ID, because new documents get bigger numbers.', '每张清单都按文档编号排序，因为新文档的编号更大。')],
+    [1, tx('A search reads only the lists of its own words, never the documents themselves.', '搜索只读自己那几个词的清单，不读文档本身。')],
+    [0, tx('Myth: the index holds copies of the documents. It holds only terms, document IDs and positions; the documents are stored somewhere else.', '误解：索引里存着文档的副本。其实它只存词项、文档编号和位置；文档本身存在别的地方。')],
+  ]) },
+{ id: 'search', name: ['AND, OR, phrases, ranking', 'AND、OR、词组、排序'],
+  intro: ['The index of D1–D4 is ready. See what the engine does with different kinds of searches.', 'D1–D4 的索引已经建好。看看搜索引擎怎样处理不同种类的搜索。'],
+  start: () => ({ docs: { ids: BASE }, idx: { ids: BASE }, focus: 'index',
+    takeaway: tx(`Every list in the index is sorted by ${T('doc-id')}. Watch how that makes combining two lists quick.`, `索引里的每张清单都按${T('doc-id')}排好了序。看看这怎样让合并两张清单变得很快。`) }),
+  steps: () => {
+    const ix = buildIndex(BASE), R = w('red'), C = w('cat'), F = w('fox'), B = w('ball'), Dg = w('dog');
+    const red = docsOf(ix, R), cat = docsOf(ix, C), tr = intersectTrace(red, cat), andRes = intersect(red, cat), qAnd = `${R} ${C}`;
+    const out = [{ title: tx(`Search: ${qAnd}`, `搜索：${qAnd}`), short: 'AND',
+      story: tx(`Someone searches ${kw(R)} ${kw(C)}. Most engines read this as ${T('intersect', 'AND')}: a result must contain both words. The engine fetches the two lists.`,
+        `有人搜索 ${kw(R)} ${kw(C)}。大多数搜索引擎把它理解为 ${T('intersect', 'AND')}：结果必须两个词都有。搜索引擎取出这两张清单。`),
+      takeaway: tx('To combine them, put one finger at the start of each list. Because the lists are sorted, the fingers only ever move forward.', '要合并它们，就在每张清单的开头各放一根手指（指针）。因为清单是排好序的，手指只需要往前走。'),
+      docs: { ids: BASE, mark: [R, C] }, idx: { ids: BASE, hl: [R, C] }, q: qbox(qAnd, 'AND') + plist(listOf(R), red) + plist(listOf(C), cat), focus: 'query', changed: ['index', 'query'] }];
+    tr.forEach((s, k) => {
+      const a = red[s.i], b = cat[s.j], end = k === tr.length - 1;
+      const before = new Set(tr.slice(0, k).filter(x => x.act === 'match').map(x => red[x.i]));
+      const found = tr.slice(0, k + 1).filter(x => x.act === 'match').map(x => red[x.i]);
+      const gone = list => new Set(list.filter((d, n) => n < (list === red ? s.i : s.j) && !before.has(d)));
+      const [small, big, which] = a < b ? [a, b, R] : [b, a, C], other = a < b ? C : R;
+      out.push({ title: tx(`Compare ${Dn(a)} and ${Dn(b)}`, `比较 ${Dn(a)} 和 ${Dn(b)}`), short: tx(`Step ${k + 1}`, `第 ${k + 1} 次`),
+        story: (s.act === 'match'
+          ? tx(`Both fingers point at ${Dn(a)}. It is in both lists, so it has both words: keep it, and move both fingers on.`, `两根手指都指着 ${Dn(a)}。它在两张清单里都有，也就是两个词都有：留下它，两根手指都往后移。`)
+          : tx(`The ${which} finger is at ${Dn(small)}, the ${other} finger at ${Dn(big)}. The ${other} list is sorted and already past ${Dn(small)}, so ${Dn(small)} cannot have ${other}. Move the ${which} finger on.`,
+            `“${which}”的手指在 ${Dn(small)}，“${other}”的手指在 ${Dn(big)}。“${other}”的清单是排好序的，已经走过了 ${Dn(small)}，所以 ${Dn(small)} 不可能有“${other}”。把“${which}”的手指往后移。`))
+          + (end ? tx(' Now one list has run out, so the search is finished.', '现在有一张清单走完了，搜索结束。') : ''),
+        takeaway: end
+          ? tx(`Result: ${andRes.map(Dn).join(', ')}. The work depends on the length of these two lists, not on the size of the whole collection. Real engines start from the shortest list and can jump ahead in long ones.`,
+            `结果：${andRes.map(Dn).join('、')}。工作量取决于这两张清单的长度，而不是全部文档的数量。真正的搜索引擎从最短的清单开始，在长清单里还能跳着走。`)
+          : tx('Compare the two numbers, then move the finger that points at the smaller one. Never go back.', '比较两个数字，然后移动指着较小数字的那根手指。永远不用回头。'),
+        docs: { ids: BASE, cur: s.act === 'match' ? [a] : [small], hit: found, mark: [R, C] }, idx: { ids: BASE, hl: [R, C], on: [[R, a], [C, b]] },
+        q: qbox(qAnd, 'AND') + `<div class="cmp">${Dn(a)} ${a === b ? '=' : a < b ? '<' : '>'} ${Dn(b)}${s.act === 'match' ? ' ✓' : ''}</div>`
+          + plist(listOf(R), red, { ptr: s.i, match: new Set(found), gone: gone(red) }) + plist(listOf(C), cat, { ptr: s.j, match: new Set(found), gone: gone(cat) }) + resLine(found),
+        focus: 'query', changed: ['docs', 'query'] });
+    });
+    const fox = docsOf(ix, F), ball = docsOf(ix, B), orRes = union(fox, ball);
+    out.push({ title: tx(`Search: ${F} OR ${B}`, `搜索：${F} 或 ${B}`), short: 'OR',
+      story: tx(`${T('union', 'OR')} means either word is enough. The fingers walk the lists the same way, but this time every document they pass is kept: ${kw(F)} gives ${fox.map(Dn).join(', ')} and ${kw(B)} gives ${ball.map(Dn).join(', ')}.`,
+        `${T('union', 'OR')} 的意思是有任何一个词就行。手指照样沿着清单走，但这次走过的每篇文档都留下：${kw(F)} 给出 ${fox.map(Dn).join('、')}，${kw(B)} 给出 ${ball.map(Dn).join('、')}。`),
+      takeaway: tx('OR gives more results and AND gives fewer. That is why typing more words into a search usually narrows it down.', 'OR 的结果更多，AND 的结果更少。所以在搜索框里多打几个词，结果通常会变少、变准。'),
+      docs: { ids: BASE, hit: orRes, miss: others(orRes), mark: [F, B] }, idx: { ids: BASE, hl: [F, B], on: [...fox.map(d => [F, d]), ...ball.map(d => [B, d])] },
+      q: qbox(tx(`${F} OR ${B}`, `${F} 或 ${B}`), 'OR') + plist(listOf(F), fox, { match: new Set(fox) }) + plist(listOf(B), ball, { match: new Set(ball) }) + resLine(orRes), focus: 'query', changed: ['docs', 'index', 'query'] });
+    const pText = tx('"red cat"', '“红色的猫”'), pq = parseQuery(pText), phr = runQuery(pq, ix).hits.map(h => h.d).sort((x, y) => x - y);
+    const gap = pq.toks.find(t => t.term === C).off - pq.toks.find(t => t.term === R).off, apart = andRes.filter(d => !phr.includes(d));
+    const posOf = (t, d) => ix.get(t).find(p => p.d === d).pos;
+    out.push({ title: tx(`Search: ${pText}`, `搜索：${pText}`), short: tx('Phrase', '词组'),
+      story: tx(`With quotes, it is a ${T('phrase')}: the words must stand next to each other, in that order. AND already found ${andRes.map(Dn).join(' and ')}. Now the engine checks the ${T('position', 'positions')}: ${kw(C)} must be at the position right after ${kw(R)}.`,
+        `加了引号就是${T('phrase')}：这几个词必须按顺序紧挨在一起。AND 已经找到了 ${andRes.map(Dn).join(' 和 ')}。现在检查${T('position')}：${kw(C)} 的位置必须正好是 ${kw(R)} 的位置 + ${gap}（中间是停用词“的”）。`),
+      takeaway: tx(`${apart.map(Dn).join(', ')} has both words, but not side by side, so it drops out. This is why the index stores positions and not just document IDs.`,
+        `${apart.map(Dn).join('、')} 两个词都有，但不挨在一起，所以被去掉了。这就是索引要存位置、而不只存文档编号的原因。`),
+      docs: { ids: BASE, hit: phr, miss: others(phr), mark: [R, C] }, idx: { ids: BASE, hl: [R, C], on: andRes.flatMap(d => [[R, d], [C, d]]) },
+      q: qbox(pText, tx('phrase', '词组')) + andRes.map(d => `<div class="cmp">${Dn(d)}: ${kw(R)} @${posOf(R, d).join(',')} · ${kw(C)} @${posOf(C, d).join(',')} → ${phr.includes(d) ? `<span class="ok">✓</span>${tx('side by side', '紧挨着')}` : `<span class="bad">✗</span>${tx('apart', '不挨着')}`}</div>`).join('') + resLine(phr),
+      focus: 'query', changed: ['docs', 'index', 'query'] });
+    const rk = rank(ix, [C, Dg], BASE.length), iC = idfOf(ix, C, BASE.length), iD = idfOf(ix, Dg, BASE.length), rkIds = rk.map(r => r.d);
+    out.push({ title: tx(`Rank: ${C} ${Dg}`, `排序：${C} ${Dg}`), short: tx('Ranking', '排序'),
+      story: tx(`Real searches find far too many documents, so the best must come first. Search ${kw(C)} ${kw(Dg)}, take documents with either word, and score each one: for every search word, add up ${T('tf')} × ${T('idf')}, that is, how often the document uses the word times how rare the word is.`,
+        `真实的搜索会找到太多文档，所以最好的要排在前面。搜索 ${kw(C)} ${kw(Dg)}，取出含有任一个词的文档，给每篇打分：对每个搜索词算 ${T('tf')} × ${T('idf')}，也就是“文档里用了几次”乘以“这个词有多稀有”，再加起来。`),
+      takeaway: tx(`${Dn(rk[0].d)} comes first: it says ${C} twice and also has ${Dg}, the rarer word (idf ${iD.toFixed(2)} against ${iC.toFixed(2)}). Most engines today use ${T('bm25')}, an improved ${T('tf-idf')}.`,
+        `${Dn(rk[0].d)} 排第一：它说了两次“${C}”，还有更稀有的“${Dg}”（idf ${iD.toFixed(2)}，而“${C}”是 ${iC.toFixed(2)}）。今天大多数搜索引擎用的是 ${T('bm25')}，一种改进过的 ${T('tf-idf')}。`),
+      docs: { ids: BASE, hit: rkIds, miss: others(rkIds), mark: [C, Dg] }, idx: { ids: BASE, hl: [C, Dg] },
+      q: qbox(`${C} ${Dg}`, tx('ranked', '排序')) + `<div class="cmp">idf(${esc(C)}) = log₂(4 ÷ ${docsOf(ix, C).length}) = ${iC.toFixed(2)}<br>idf(${esc(Dg)}) = log₂(4 ÷ ${docsOf(ix, Dg).length}) = ${iD.toFixed(2)}</div>`
+        + `<table class="sc"><tr><th>${tx('Rank', '名次')}</th><th>tf ${esc(C)}</th><th>tf ${esc(Dg)}</th><th>${tx('Score', '分数')}</th></tr>`
+        + rk.map((r, k) => `<tr class="${k ? '' : 'top1'}"><td>${k + 1}. ${Dn(r.d)}</td><td>${tfOf(ix, C, r.d)}</td><td>${tfOf(ix, Dg, r.d)}</td><td>${r.s.toFixed(2)}</td></tr>`).join('') + '</table>',
+      focus: 'query', changed: ['docs', 'index', 'query'] });
+    const words = BASE.reduce((n, d) => n + tokens(docById(d)).length, 0), entries = red.length + cat.length;
+    out.push({ title: tx('Why not just read everything?', '为什么不直接全读一遍？'), short: tx('Compare', '对比'),
+      story: tx(`To answer ${kw(R)} ${kw(C)} without an index, the engine would read all ${words} words of the 4 documents. With the index, it read ${entries} list entries.`,
+        `不用索引回答 ${kw(R)} ${kw(C)}，要把 4 篇文档的 ${words} 个词全读一遍。用索引，只读了 ${entries} 个清单条目。`),
+      takeaway: tx('The gap grows with the collection. A billion web pages of about 500 words each is 500 billion words to read for every single search. With the index, a search reads only the lists of its own words; the hard work was done once, ahead of time.',
+        '差距随文档的数量增长。十亿个网页、每个约 500 个词，就是每次搜索都要读五千亿个词。有了索引，一次搜索只读自己那几个词的清单；辛苦的活儿已经提前做完了。'),
+      docs: { ids: BASE, cur: BASE }, idx: { ids: BASE, hl: [R, C] },
+      q: qbox(qAnd) + `<div class="vs"><div class="slow">${T('full-scan')}<div class="big">${words}</div>${tx('words read', '个词要读')}</div><div class="fast">${T('inverted-index')}<div class="big">${entries}</div>${tx('list entries read', '个清单条目')}</div></div>`,
+      focus: 'query', changed: ['docs', 'query'] });
+    return out;
+  },
+  wrap: () => checks([
+    [1, tx('AND: walk the sorted lists side by side and keep the documents found in all of them.', 'AND：沿着排好序的清单并排往前走，留下每张清单里都有的文档。')],
+    [1, tx('OR: keep every document found in any of the lists.', 'OR：留下任何一张清单里有的文档。')],
+    [1, tx('A phrase also checks that the positions are next to each other.', '词组搜索还要检查位置是不是紧挨着。')],
+    [1, tx('Ranking puts documents that use rare search words often at the top (tf × idf).', '排序把常用稀有搜索词的文档放在前面（tf × idf）。')],
+    [0, tx('Myth: more search words give more results. With AND, every extra word can only keep or remove documents.', '误解：搜索词越多，结果越多。用 AND 时，每多一个词只会保留或去掉文档。')],
+  ]) },
+{ id: 'change', name: ['Add and delete documents', '增加和删除文档'],
+  intro: ['Documents come and go. See how the index keeps up without being built again from scratch.', '文档会增加，也会被删除。看看索引怎样跟上变化，而不用从头重建。'],
+  start: () => ({ docs: { ids: BASE }, idx: { ids: BASE }, focus: 'docs',
+    takeaway: tx('Rebuilding the whole index for every change would be far too slow for a big collection. Instead the engine makes small changes and tidies up later.', '每次变化都重建整个索引，对大量文档来说太慢了。搜索引擎的做法是先做小改动，以后再整理。') }),
+  steps: () => {
+    const ALL = [...BASE, 5], before = buildIndex(BASE), after = buildIndex(ALL), t5 = [...buildIndex([5]).keys()];
+    const oldT = t5.filter(t => before.has(t)), newT = t5.filter(t => !before.has(t));
+    const del = [2], Dg = w('dog'), dogAll = docsOf(after, Dg), dogLive = dogAll.filter(d => !del.includes(d));
+    const gone = [...after].filter(([, pl]) => pl.every(p => del.includes(p.d))).map(([t]) => t);
+    const d5 = isZh() ? docById(5).zh.join('') : docById(5).en;
+    return [
+      { title: tx('A new document: D5', '新文档：D5'), short: tx('New D5', '新的 D5'),
+        story: tx(`D5 arrives: “${esc(d5)}” It gets the next number, 5, and is cut into words and cleaned up just like the others.`, `D5 来了：“${esc(d5)}”它拿到下一个编号 5，像其他文档一样被切词、清理。`),
+        takeaway: tx('Every new document gets a bigger number than any document before it.', '每篇新文档的编号都比之前所有文档的大。“小狗”在这里切成 小 | 狗，所以搜“狗”能找到它。分词切得对不对，直接决定能不能搜到。'),
+        docs: { ids: ALL, cur: 5, toks: 5, norm: true, isNew: 5 }, idx: { ids: BASE }, focus: 'docs', changed: ['docs'] },
+      { title: tx('Add D5 to the index', '把 D5 写进索引'), short: tx('Add D5', '加入 D5'),
+        story: tx(`${oldT.map(kw).join(' ')} already have lists, so D5 is added at the end of each. ${newT.map(kw).join(' ')} are new, so they get new rows.`,
+          `${oldT.map(kw).join(' ')} 已经有清单了，D5 加在它们的末尾。${newT.map(kw).join(' ')} 是新词项，各加一行。`),
+        takeaway: tx('Because 5 is the biggest number so far, every list stays sorted. Big engines collect new documents in a small extra index and search it together with the main one, so nothing is rebuilt.',
+          '因为 5 是目前最大的编号，每张清单依然有序。大型搜索引擎把新文档先放进一个小的附加索引，和主索引一起搜索，所以什么都不用重建。'),
+        docs: { ids: ALL, cur: 5, mark: t5 }, idx: { ids: ALL, newD: [5] }, focus: 'index', changed: ['docs', 'index'] },
+      { title: tx('Delete D2', '删除 D2'), short: tx('Delete D2', '删除 D2'),
+        story: tx(`D2 is deleted. Rewriting every list that mentions D2 right away would be slow, so the engine only writes D2 on a short list of deleted documents (a ${T('tombstone')}).`,
+          `D2 被删除了。马上改写每张提到 D2 的清单太慢，所以搜索引擎只是把 D2 记到一张“已删除”的小清单上（${T('tombstone')}）。`),
+        takeaway: tx('The lists still say D2 (crossed out here). Every search checks the deleted list and hides D2 from the results.', '清单里还写着 D2（这里画了删除线）。每次搜索都会查一下已删除清单，把 D2 从结果里藏起来。'),
+        docs: { ids: ALL, del }, idx: { ids: ALL, del }, focus: 'index', changed: ['docs', 'index'] },
+      { title: tx(`Search: ${Dg}`, `搜索：${Dg}`), short: tx('Search', '搜索'),
+        story: tx(`A search for ${kw(Dg)} reads its list: ${dogAll.map(Dn).join(', ')}. D2 is on the deleted list, so it is skipped.`, `搜索 ${kw(Dg)}，读出它的清单：${dogAll.map(Dn).join('、')}。D2 在已删除清单上，所以跳过。`),
+        takeaway: tx(`The result is ${dogLive.map(Dn).join(', ')}, including the new D5. The index followed both changes without being rebuilt.`, `结果是 ${dogLive.map(Dn).join('、')}，包括新加的 D5。索引跟上了两次变化，没有重建。`),
+        docs: { ids: ALL, del, hit: dogLive, miss: ALL.filter(d => !dogAll.includes(d)), mark: [Dg] }, idx: { ids: ALL, del, hl: [Dg], on: dogLive.map(d => [Dg, d]) },
+        q: qbox(Dg) + plist(listOf(Dg), dogAll, { gone: new Set(del), match: new Set(dogLive) }) + `<div class="cmp">${tx('Deleted', '已删除')}: ${del.map(Dn).join(tx(', ', '、'))}</div>` + resLine(dogLive),
+        focus: 'query', changed: ['docs', 'index', 'query'] },
+      { title: tx('Clean up later', '稍后清理'), short: tx('Merge', '合并'),
+        story: tx(`Later, a background ${T('merge')} rewrites the lists without D2. Terms that only D2 had, ${gone.map(kw).join(' ')}, disappear completely.`,
+          `之后，后台的${T('merge')}把清单重写一遍，去掉 D2。只有 D2 才有的词项 ${gone.map(kw).join(' ')} 整行消失。`),
+        takeaway: tx('Searches never wait for this. Until the clean-up is done, they simply keep using the deleted list.', '搜索从来不用等它。在整理完成之前，搜索照样用已删除清单就行。'),
+        docs: { ids: ALL, del }, idx: { ids: ALL, del, merged: true }, focus: 'index', changed: ['index'] },
+    ];
+  },
+  wrap: () => checks([
+    [1, tx('Adding a document appends its number to the end of each of its words’ lists.', '增加文档：把它的编号加到它每个词的清单末尾。')],
+    [1, tx('Deleting a document first only marks it as deleted; searches hide it.', '删除文档：先只做个删除标记，搜索时把它藏起来。')],
+    [1, tx('A background merge later removes it for real.', '之后后台合并时才真正把它去掉。')],
+    [0, tx('Myth: the index must be rebuilt from scratch whenever something changes.', '误解：一有变化就得把索引从头重建。')],
+  ]) },
+];
+// ---------- rendering (pure: state → HTML) ----------
+function markText(d, terms) {
+  const set = new Set(terms || []);
+  if (isZh()) return d.zh.map(t => !PUNCT.test(t) && set.has(norm(t)) ? `<mark>${esc(t)}</mark>` : esc(t)).join('');
+  return esc(d.en).replace(/[A-Za-z]+/g, t => set.has(norm(t)) ? `<mark>${t}</mark>` : t);
+}
+function docsHtml(s) {
+  const o = s.docs, arr = k => [].concat(o[k] || []), cur = arr('cur'), hit = arr('hit'), miss = arr('miss'), del = arr('del');
+  return o.ids.map(id => {
+    const d = docById(id); let cls = 'doc', badge = '';
+    if (cur.includes(id)) cls += ' cur';
+    if (del.includes(id)) { cls += ' del'; badge = `<span class="badge del">${tx('deleted', '已删除')}</span>`; }
+    else if (hit.includes(id)) { cls += ' hit'; badge = '<span class="badge ok">✓</span>'; }
+    else if (miss.includes(id)) { cls += ' miss'; badge = '<span class="badge bad">✗</span>'; }
+    if (o.isNew === id) cls += ' new';
+    let h = `<div class="${cls}">${badge}<span class="id">${Dn(id)}</span><span class="txt">${markText(d, o.mark)}</span>`;
+    if (o.toks === id) h += `<div class="toks">${tokens(d).map(t => `<span class="tok${o.norm && !t.term ? ' stop' : ''}">${esc(o.norm && t.term && t.term !== t.w ? `${t.w} → ${t.term}` : t.w)}<small>${t.pos}</small></span>`).join('')}</div>`;
+    return h + '</div>';
+  }).join('');
+}
+function indexHtml(s) {
+  if (!s.idx) return `<span class="none">${tx('Empty. Terms are added here as the documents are read.', '还是空的。读文档时，词项会一个个加到这里。')}</span>`;
+  const o = s.idx, ix = buildIndex(o.ids), del = new Set(o.del || []), hl = new Set(o.hl || []), nw = new Set(o.newD || []);
+  const on = new Set((o.on || []).map(([t, d]) => `${t}|${d}`));
+  let h = `<table class="ix"><tr><th>${T('term', tx('Term', '词项'))}</th><th>${T('df', 'df')}</th><th>${T('postings', tx('Documents @ positions', '文档 @ 位置'))}</th></tr>`, n = 0;
+  for (const [t, all] of ix) {
+    const pl = o.merged ? all.filter(p => !del.has(p.d)) : all;
+    if (!pl.length) continue;
+    n++;
+    h += `<tr class="${hl.has(t) ? 'hl' : ''}${nw.size && pl.every(p => nw.has(p.d)) ? ' new' : ''}"><td class="t">${esc(t)}</td><td class="df">${pl.filter(p => !del.has(p.d)).length}</td><td>`
+      + pl.map(p => `<span class="pg${del.has(p.d) ? ' del' : ''}${on.has(`${t}|${p.d}`) ? ' on' : ''}${nw.has(p.d) ? ' new' : ''}">${Dn(p.d)}<small>@${p.pos.join(',')}</small></span>`).join('') + '</td></tr>';
+  }
+  return h + `</table><div class="kbd" style="margin-top:6px">${tx(`${n} terms`, `共 ${n} 个词项`)}${del.size && !o.merged ? ` · ${T('tombstone', tx('deleted', '已删除'))}: ${[...del].map(Dn).join(tx(', ', '、'))}` : ''}</div>`;
+}
+const queryHtml = s => s.q || `<span class="none">${tx('No search yet.', '还没有搜索。')}</span>`;
+
+// ---------- the step engine ----------
+let scen = SCENARIOS[0], steps = [], cur = 0, stab = 'docs';
+const last = () => steps.length + 1;   // 0 = starting point, last = wrap-up
+function build() {
+  steps = scen.steps();
+  steps.forEach((s, i) => { if (!s.title || !s.story || !s.takeaway || !s.docs) throw new Error(`${scen.id} step ${i + 1} is incomplete`); });
+}
+const stateAt = i => i === 0 ? scen.start() : steps[Math.min(i, steps.length) - 1];
+function storyHtml() {
+  const n = steps.length;
+  if (cur === 0) return `<div class="n">${tx('Starting point', '起点')}</div><h2>${L(scen.name)}</h2><p>${L(scen.intro)}</p><div class="tip-box">💡 ${scen.start().takeaway}</div>`;
+  if (cur === last()) return `<div class="n">${tx('Wrap-up', '总结')}</div><h2>${tx('What this showed', '这一部分讲了什么')}</h2>${scen.wrap()}<div class="tip-box">${tx('Try another scenario from the menu at the top, or type your own search at the bottom of the page.', '从顶部菜单换一个场景试试，或者在页面最下面自己输入搜索词。')}</div>`;
+  const st = steps[cur - 1];
+  return `<div class="n">${tx(`Step ${cur} of ${n}`, `第 ${cur} 步，共 ${n} 步`)}</div><h2>${st.title}</h2><p>${st.story}</p><div class="tip-box">💡 ${st.takeaway}</div>`;
+}
+
+// ---------- your own search ----------
+const EXAMPLES = { en: ['cat', 'red cat', 'fox OR ball', '"red cat"', 'dogs', 'the sun'], zh: ['猫', '红色 猫', '狐狸 或 球', '“红色的猫”', '红色猫', '阳光'] };
+function tryHtml(text) {
+  const q = parseQuery(text); if (!q) return '';
+  const ix = buildIndex(BASE), r = runQuery(q, ix);
+  const mode = { and: tx('Read as AND: every word must appear.', '理解为 AND：每个词都要有。'), or: tx('Read as OR: any word is enough.', '理解为 OR：有任何一个词就行。'), phrase: tx('Read as a phrase: words side by side, in this order.', '理解为词组：按这个顺序紧挨着。') }[q.mode];
+  let h = `<div class="how">${mode}</div>`;
+  for (const t of q.toks) h += `<div class="cmp">${kw(t.w)} → ${!t.term ? tx('stop word, skipped', '停用词，跳过') : ix.has(t.term) ? `${t.term !== t.w ? kw(t.term) + ' ' : ''}${docsOf(ix, t.term).map(d => `<span class="pg">${Dn(d)}</span>`).join('')}` : tx('not in the index', '索引里没有')}</div>`;
+  if (!r.terms.length) return h + `<div class="res">${tx('Only stop words: nothing to search for.', '只有停用词：没有可搜的。')}</div>`;
+  h += `<div class="res">${r.hits.length ? tx(`${r.hits.length} found, best first:`, `找到 ${r.hits.length} 篇，按相关度排序：`) : tx('No document matches.', '没有匹配的文档。')}</div>`;
+  return h + r.hits.map(({ d, s }) => `<div class="doc hit"><span class="score">${tx('score', '分数')} ${s.toFixed(2)}</span><span class="id">${Dn(d)}</span>${markText(docById(d), r.terms.map(t => t.term))}</div>`).join('');
+}
+
+// ---------- page ----------
+const $ = s => document.querySelector(s);
+const PANELS = [['docs', 'docsTitle', 'var(--c1)'], ['index', 'indexTitle', 'var(--c2)'], ['query', 'queryTitle', 'var(--c3)']];
+function renderPanels() {
+  const s = stateAt(cur), changed = cur === 0 || cur === last() ? [] : s.changed || [];
+  $('#docs').innerHTML = docsHtml(s); $('#index').innerHTML = indexHtml(s); $('#query').innerHTML = queryHtml(s);
+  $('#stabs').innerHTML = PANELS.map(([k, t, c]) => `<button type="button" data-stab="${k}" class="${k === stab ? 'on' : ''}" style="--c:${c}">${U(t)}${changed.includes(k) && k !== stab ? '<span class="hitdot"></span>' : ''}</button>`).join('');
+  document.querySelectorAll('.panel').forEach(p => { p.classList.toggle('on', p.dataset.k === stab); p.classList.toggle('hitp', changed.includes(p.dataset.k)); });
+}
+function go(i) {
+  cur = Math.max(0, Math.min(last(), i)); hideTip();
+  if (cur <= steps.length) stab = stateAt(cur).focus || stab;
+  $('#story').innerHTML = storyHtml(); renderPanels();
+  $('#dots').innerHTML = Array.from({ length: last() + 1 }, (_, k) => `<button type="button" class="dot${k < cur ? ' done' : k === cur ? ' cur' : ''}" data-step="${k}" title="${k === 0 ? tx('Start', '开始') : k === last() ? tx('Wrap-up', '总结') : esc(steps[k - 1].short || '')}"></button>`).join('');
+  $('#pos').textContent = cur === 0 ? tx('Start', '开始') : cur === last() ? tx('Wrap-up', '总结') : `${cur} / ${steps.length}`;
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === last();
+  $('#next').textContent = cur === 0 ? tx('Start →', '开始 →') : cur === last() ? tx('Done ✓', '完成 ✓') : tx('Next →', '下一步 →');
+  const r = $('#story').getBoundingClientRect();
+  if (r.top < 0 || r.top > innerHeight * 0.6) window.scrollTo({ top: $('#story').offsetTop - 8, behavior: 'smooth' });
+}
+function applyLang() {
+  document.documentElement.lang = isZh() ? 'zh-Hans' : 'en';
+  document.title = tx('How search works: the inverted index', '搜索是怎么工作的：倒排索引');
+  document.querySelectorAll('[data-t]').forEach(el => { el.innerHTML = U(el.dataset.t); });
+  $('#lang').value = LANG;
+  $('#scen').innerHTML = SCENARIOS.map(s => `<option value="${s.id}"${s === scen ? ' selected' : ''}>${L(s.name)}</option>`).join('');
+  $('#examples').innerHTML = EXAMPLES[LANG].map(e => `<button type="button" data-q="${esc(e)}">${esc(e)}</button>`).join('');
+  $('#tryq').placeholder = tx('e.g. red cat', '例如：红色 猫');
+}
+function showTip(el) {
+  const [h, d] = G()[el.dataset.term], tip = $('#tip'), host = el.closest('dialog') || document.body;
+  if (tip.parentNode !== host) host.appendChild(tip);
+  tip.innerHTML = `<span class="x" role="button" aria-label="close">✕</span><b>${h}</b>${d}`;
+  tip.hidden = false;
+  const r = el.getBoundingClientRect(), base = host === document.body ? { left: -scrollX, top: -scrollY, width: innerWidth } : host.getBoundingClientRect();
+  tip.style.maxWidth = Math.min(340, base.width - 16) + 'px';
+  const x = Math.max(8, Math.min(r.left - base.left, base.width - tip.offsetWidth - 8));
+  tip.style.left = x + 'px'; tip.style.top = (r.bottom - base.top + 8) + 'px';
+  tip.style.setProperty('--ax', Math.max(8, Math.min(tip.offsetWidth - 20, r.left - base.left - x + Math.min(r.width / 2, 30) - 6)) + 'px');
+}
+function hideTip() { const t = HAS_DOM && $('#tip'); if (t) t.hidden = true; }
+function doTry() { $('#tryout').innerHTML = tryHtml($('#tryq').value); }
+function init() {
+  scen = SCENARIOS.find(s => s.id === new URLSearchParams(location.search).get('s')) || SCENARIOS[0];
+  applyLang(); build(); go(+new URLSearchParams(location.search).get('step') || 0);
+  $('#prev').onclick = () => go(cur - 1);
+  $('#next').onclick = () => go(cur + 1);
+  $('#dots').onclick = e => { const b = e.target.closest('[data-step]'); if (b) go(+b.dataset.step); };
+  $('#stabs').onclick = e => { const b = e.target.closest('[data-stab]'); if (b) { stab = b.dataset.stab; renderPanels(); } };
+  $('#scen').onchange = e => { scen = SCENARIOS.find(s => s.id === e.target.value); build(); go(0); };
+  $('#lang').onchange = e => {
+    LANG = e.target.value;
+    try { localStorage.setItem('learn-lang', LANG); } catch (_) {}
+    const u = new URL(location.href); u.searchParams.set('lang', LANG); history.replaceState(null, '', u);
+    applyLang(); build(); go(Math.min(cur, last()));
+    $('#tryq').value = ''; $('#tryout').innerHTML = '';
+  };
+  $('#howBtn').onclick = () => $('#howDlg').showModal();
+  $('#examples').onclick = e => { const b = e.target.closest('[data-q]'); if (b) { $('#tryq').value = b.dataset.q; doTry(); } };
+  $('#tryq').oninput = doTry;
+  document.addEventListener('click', e => {
+    const t = e.target.closest('.term');
+    if (t) { showTip(t); return; }
+    if (!e.target.closest('#tip') || e.target.closest('.x')) hideTip();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') hideTip();
+    if (e.target.closest && e.target.closest('input, select, textarea, dialog[open]')) return;
+    if (e.key === 'ArrowRight') go(cur + 1);
+    else if (e.key === 'ArrowLeft') go(cur - 1);
+    else if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('term')) showTip(e.target);
+  });
+  let seen = null;
+  try { seen = localStorage.getItem('ii-seen-how'); localStorage.setItem('ii-seen-how', '1'); } catch (_) {}
+  if (!seen) $('#howDlg').showModal();
+}
+
+if (typeof module !== 'undefined') module.exports = {
+  DOCS, BASE, GLOSS, SCENARIOS, tokens, norm, buildIndex, docsOf, intersectTrace, intersect, union, phraseHits, rank, bsearch, parseQuery, runQuery,
+  docsHtml, indexHtml, queryHtml, tryHtml, storyHtml, build,
+  setLang: l => { LANG = l; }, setScen: id => { scen = SCENARIOS.find(s => s.id === id); build(); return steps.length; }, setCur: i => { cur = i; },
+};
+else init();
+</script>
+</body>
+</html>
