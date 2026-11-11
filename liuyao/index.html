@@ -268,6 +268,18 @@ PALACES.forEach(([p, names]) => {
   h = [...h]; h[3] ^= 1; put(6); HEX[h.join('')].flip = 4;
   h = [...t.bits, ...h.slice(3)]; put(7); HEX[h.join('')].flip = -1;
 });
+// 寻世诀: compare the upper and lower trigram line by line — 天 (lines 6 & 3), 人 (5 & 2), 地 (4 & 1)
+const SAN = [['Heaven', '天', 5, 2], ['Human', '人', 4, 1], ['Earth', '地', 3, 0]];
+function shiByVerse(bits) {
+  const same = SAN.map(([, , a, b]) => bits[a] === bits[b]), n = same.filter(Boolean).length;
+  if (n === 3) return 0;
+  if (n === 0) return 3;
+  const k = n === 1 ? same.indexOf(true) : same.indexOf(false);   // the one pair that stands out
+  return n === 1 ? [2, 6, 4][k] : [5, 7, 1][k];
+}
+// the clause of the verse that applies, by generation
+const CLAUSE = [['all three same → pure', '本宫六世'], ['only Earth different → 1st generation', '地变初'], ['only Heaven same → 2nd generation', '天同二世'], ['all three different → 3rd generation', '三世异'],
+  ['only Earth same → 4th generation', '地同四世'], ['only Heaven different → 5th generation', '天变五'], ['only Human same → wandering soul', '人同游魂'], ['only Human different → returning soul', '人变归']];
 const palaceList = p => { const out = []; for (const k in HEX) if (HEX[k].pal === p) out.push([k, HEX[k]]); return out.sort((a, b) => a[1].gen - b[1].gen); };
 
 // ---------- calendar (same method as the Qimen lesson) ----------
@@ -462,7 +474,7 @@ function coinHtml(c, spin) {
 }
 function tossStory(g, n) {
   const done = n >= 6, c = lastCoins;
-  const res = c ? (() => { const v = c.reduce((s, x) => s + (x ? 3 : 2), 0), t = TOSS[v]; return `${tx(`Last toss (${L(POS[n - 1]).toLowerCase()} line): `, `上一次（${POS[n - 1][1]}爻）：`)}${c.map(x => x ? 3 : 2).join(' + ')} = <b>${v}</b> → ${L(t)}${tx(` (${t[2]})`, `（${t[2]}）`)} ${v % 2 ? tx('yang', '阳爻') : tx('yin', '阴爻')}${t[3] ? tx(`, moving ${t[3]}`, `，动 ${t[3]}`) : ''}`; })() : '&nbsp;';
+  const res = spinning ? tx('Tossing…', '摇钱中……') : c ? (() => { const v = c.reduce((s, x) => s + (x ? 3 : 2), 0), t = TOSS[v]; return `${tx(`Last toss (${L(POS[n - 1]).toLowerCase()} line): `, `上一次（${POS[n - 1][1]}爻）：`)}${c.map(x => x ? 3 : 2).join(' + ')} = <b>${v}</b> → ${L(t)}${tx(` (${t[2]})`, `（${t[2]}）`)} ${v % 2 ? tx('yang', '阳爻') : tx('yin', '阴爻')}${t[3] ? tx(`, moving ${t[3]}`, `，动 ${t[3]}`) : ''}`; })() : '&nbsp;';
   let h = `<div class="n">${tx('Casting', '起卦')}</div><h2>${done ? tx('Six tosses, six lines', '六次摇完，六爻成卦') : tx(`Toss ${n + 1} of 6 → the ${L(POS[n]).toLowerCase()} line`, `第 ${n + 1} 次，共 6 次 → ${POS[n][1]}爻`)}</h2>`;
   h += `<p>${tx(`${T('yiqian')}: hold three coins, keep the question in mind, shake and drop them. Each ${T('zibei', 'face')} counts 2 and each back counts 3; the total gives one ${T('yao', 'line')}. The first toss is the <b>bottom</b> line.`, `${T('yiqian')}：手捧三枚铜钱，心想所问之事，摇后掷下。${T('zibei', '字')}算 2，背算 3，三枚相加得一${T('yao')}。第一次得的是<b>最下面</b>的初爻。`)}</p>`;
   if (!done) {
@@ -493,13 +505,17 @@ function buildSteps(g) {
       + `<div class="sec-title" style="margin-top:12px">${tx('Eight trigrams', '八卦')}</div><table class="t">${TRI.map((t, k) => `<tr class="${k === g.ben.up || k === g.ben.lo ? 'on' : ''}"><td>${mini(t.bits)}</td><td>${t.n}</td><td>${t.img}</td><td>${tx(t.en, '')}</td></tr>`).join('')}</table>`,
     board: { layers: L1, fresh: 'bian', hl: mvIdx } });
   // 2. palace and world/response
-  const plist = palaceList(g.ben.pal);
+  const plist = palaceList(g.ben.pal), sv = shiByVerse(g.bits), same = SAN.map(([, , a, b]) => g.bits[a] === g.bits[b]);
+  const clause = L(CLAUSE[sv]);
+  const verseBox = `<div class="sec-title">${tx('Shortcut: the 世 verse', '捷径：寻世诀')}</div><div class="verse">天同二世天变五，地同四世地变初，本宫六世三世异，人同游魂人变归。</div>`
+    + `<table class="t"><tr><th>${tx('Pair', '三才')}</th><th>${tx('Upper', '上卦')}</th><th>${tx('Lower', '下卦')}</th><th></th></tr>${SAN.map(([en, zh, a, b], k) => `<tr><td>${tx(`${en} (${zh}): lines ${a + 1} & ${b + 1}`, `${zh}：${POS[a][1]}爻 与 ${POS[b][1]}爻`)}</td><td>${bar(g.bits[a])}</td><td>${bar(g.bits[b])}</td><td>${same[k] ? `<b class="ok">${tx('same', '同')}</b>` : `<b class="bad">${tx('different', '变')}</b>`}</td></tr>`).join('')}</table>`
+    + `<div class="cmp">→ <b>${clause}</b>${tx(`: 世 on the ${nPos(SHI[sv] - 1)}`, `：世在${nPos(SHI[sv] - 1)}`)}</div>`;
   S.push({ short: tx('Palace', '卦宫'), title: tx(`Find the palace → 世 and 应`, '找卦宫 → 安世应'),
     story: tx(`Every hexagram belongs to one of the ${T('gong', 'eight palaces')}. Each palace starts from a doubled trigram and changes one line at a time from the bottom: 1st, 2nd … 5th generation, then the ${T('youhun', 'wandering and returning souls')}. ${g.ben.name} is the <b>${L(GEN[g.ben.gen])}</b> of the <b>${g.ben.pal}</b> palace, so its palace phase is <b>${nWx(g.palWx)}</b>.`,
       `每个卦都属于${T('gong')}中的一宫。一宫从八纯卦开始，从下往上一次变一爻：一世、二世……五世，再加${T('youhun')}。${g.ben.name}是<b>${g.ben.pal}宫${L(GEN[g.ben.gen])}</b>卦，所以卦宫五行属<b>${WX[g.palWx]}</b>。`),
-    takeaway: tx(`The generation fixes the ${T('shiying', 'World line (世)')}: pure → top line; 1st–5th generation → that line; wandering → 4th; returning → 3rd. The Response (应) is always three lines away. Here 世 is on the ${nPos(g.shi - 1)}, 应 on the ${nPos(g.ying - 1)}.`,
-      `第几世就决定${T('shiying', '世爻')}在哪：八纯世在上爻，一世到五世就在那一爻，游魂世在四爻，归魂世在三爻。应爻永远和世隔三爻。这里世在${nPos(g.shi - 1)}，应在${nPos(g.ying - 1)}。`),
-    work: `<table class="t"><tr><th></th><th>${tx(`${g.ben.pal} palace`, `${g.ben.pal}宫八卦`)}</th><th>${tx('change', '怎么变')}</th><th>世</th></tr>${plist.map(([k, x], j) => `<tr class="${x.name === g.ben.name ? 'on' : ''}"><td>${L(GEN[x.gen])}</td><td>${mini(k.split('').map(Number), x.flip > 0 ? [x.flip - 1] : x.flip === -1 ? [0, 1, 2] : [])} ${x.name}</td><td style="font-size:12.5px">${x.gen === 0 ? tx('start', '起点') : x.gen <= 5 ? tx(`flip line ${x.gen}`, `变${POS[x.gen - 1][1]}爻`) : x.gen === 6 ? tx('line 4 back', '四爻变回') : tx('lower back', '下卦变回')}</td><td>${nPos(SHI[x.gen] - 1)}</td></tr>`).join('')}</table>`,
+    takeaway: tx(`The generation fixes the ${T('shiying', 'World line (世)')}: pure → top line; 1st–5th generation → that line; wandering → 4th; returning → 3rd. The Response (应) is always three lines away. Here 世 is on the ${nPos(g.shi - 1)}, 应 on the ${nPos(g.ying - 1)}. Without memorising the palaces, the <b>世 verse</b> on the right finds it by comparing the upper and lower trigrams line by line.`,
+      `第几世就决定${T('shiying', '世爻')}在哪：八纯世在上爻，一世到五世就在那一爻，游魂世在四爻，归魂世在三爻。应爻永远和世隔三爻。这里世在${nPos(g.shi - 1)}，应在${nPos(g.ying - 1)}。不用背八宫也能找世：用右边的<b>寻世诀</b>，把上下卦的天、人、地三爻两两一比就行。`),
+    work: verseBox + `<div class="sec-title" style="margin-top:14px">${tx('The palace, in full', '本宫八卦')}</div><table class="t"><tr><th></th><th>${tx(`${g.ben.pal} palace`, `${g.ben.pal}宫八卦`)}</th><th>${tx('change', '怎么变')}</th><th>世</th></tr>${plist.map(([k, x], j) => `<tr class="${x.name === g.ben.name ? 'on' : ''}"><td>${L(GEN[x.gen])}</td><td>${mini(k.split('').map(Number), x.flip > 0 ? [x.flip - 1] : x.flip === -1 ? [0, 1, 2] : [])} ${x.name}</td><td style="font-size:12.5px">${x.gen === 0 ? tx('start', '起点') : x.gen <= 5 ? tx(`flip line ${x.gen}`, `变${POS[x.gen - 1][1]}爻`) : x.gen === 6 ? tx('line 4 back', '四爻变回') : tx('lower back', '下卦变回')}</td><td>${nPos(SHI[x.gen] - 1)}</td></tr>`).join('')}</table>`,
     board: { layers: L2, fresh: 'shiying', hl: [g.shi - 1, g.ying - 1] } });
   // 3. najia
   S.push({ short: tx('Najia', '纳甲'), title: tx('Najia: give each line a branch', '纳甲：每爻配地支'),
@@ -688,7 +704,7 @@ function init() {
   if (!seen) $('#howDlg').showModal();
 }
 
-if (typeof module !== 'undefined') module.exports = { HEX, TRI, setup, calendar, buildSteps, boardHtml, wrapHtml, tossStory, tossWork, GLOSS, setLang: l => { LANG = l; } };
+if (typeof module !== 'undefined') module.exports = { shiByVerse, HEX, TRI, setup, calendar, buildSteps, boardHtml, wrapHtml, tossStory, tossWork, GLOSS, setLang: l => { LANG = l; } };
 else init();
 </script>
 </body>
